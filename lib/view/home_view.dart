@@ -11,9 +11,8 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Meme Cloud')),
+      appBar: AppBar(title: const Text('Home')),
       body: Center(child: Text('Welcome to Meme Cloud!')),
-      
     );
   }
 }

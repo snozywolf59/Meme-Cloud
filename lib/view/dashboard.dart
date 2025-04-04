@@ -3,19 +3,20 @@ import 'package:meme_cloud/view/home_view.dart';
 import 'package:meme_cloud/view/search_view.dart';
 import 'package:meme_cloud/view/trending_view.dart';
 
-class MyNavigation extends StatefulWidget {
-  const MyNavigation({super.key});
+class DashBoard extends StatefulWidget {
+  const DashBoard({super.key});
 
   @override
-  State<MyNavigation> createState() => _MyNavigationState();
+  State<DashBoard> createState() => _DashBoardState();
 }
 
-class _MyNavigationState extends State<MyNavigation> {
+class _DashBoardState extends State<DashBoard> {
   int currentPageIndex = 0;
+
+  List<Widget> pages = const [HomeView(), SearchView(), TrendingView()];
 
   @override
   Widget build(BuildContext context) {
-    //final ThemeData theme = Theme.of(context);
     return Scaffold(
       bottomNavigationBar: NavigationBar(
         destinations: [
@@ -36,15 +37,8 @@ class _MyNavigationState extends State<MyNavigation> {
         },
         selectedIndex: currentPageIndex,
       ),
-      body: IndexedStack(
-        index: currentPageIndex,
-        children: [
-          // Replace with your actual views
-          const HomeView(),
-          const SearchView(),
-          const TrendingView(),
-        ],
-      ),
+      body: Center(child: pages[currentPageIndex]),
     );
   }
 }
+

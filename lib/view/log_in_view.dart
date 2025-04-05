@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/auth/user_provider.dart';
 import 'package:meme_cloud/view/dashboard.dart';
-import 'package:meme_cloud/view/home_view.dart';
 
 class LogInView extends StatelessWidget {
   const LogInView({super.key});
@@ -20,7 +18,7 @@ class LogInView extends StatelessWidget {
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const DashBoard()),
+                  MaterialPageRoute(builder: (context) => DashBoard()),
                   (route) => false,
                 );
               },

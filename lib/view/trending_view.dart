@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 
-class TrendingView extends StatefulWidget {
+class TrendingView extends StatelessWidget {
   const TrendingView({super.key});
 
-  @override
-  State<TrendingView> createState() => _TrendingViewState();
-}
-
-class _TrendingViewState extends State<TrendingView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +12,9 @@ class _TrendingViewState extends State<TrendingView> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // Handle search action
+              /** 
+              TO DO
+              */
             },
           ),
         ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/services/user.dart';
+
 import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/presentation/view/start_view.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Meme Cloud',
       theme: Provider.of<ThemeProvider>(context).themeData,
-      home: User().isLoggedIn != false ? DashBoard() : const StartView(),
+      home: true != false ? DashBoard() : const StartView(),
       debugShowCheckedModeBanner: false,
     );
   }

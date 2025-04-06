@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meme_cloud/presentation/view/home_view.dart';
 import 'package:meme_cloud/presentation/view/search_view.dart';
 import 'package:meme_cloud/presentation/view/trending_view.dart';
-import 'package:meme_cloud/services/user.dart';
 
 class DashBoard extends StatelessWidget {
   DashBoard({super.key});
@@ -15,7 +14,7 @@ class DashBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${getGreeting()}, Bang!'),
+        title: Text('Bang!'),
         actions: [
           IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
           Padding(

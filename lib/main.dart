@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/services/user.dart';
-import 'package:meme_cloud/view/dashboard.dart';
-import 'package:meme_cloud/view/start_view.dart';
+import 'package:meme_cloud/presentation/view/dashboard.dart';
+import 'package:meme_cloud/presentation/view/start_view.dart';
 import 'package:provider/provider.dart';
 
-import 'package:meme_cloud/themes/theme_provider.dart';
+import 'package:meme_cloud/core/configs/theme/theme_provider.dart';
 
 void main() => runApp(
   ChangeNotifierProvider(

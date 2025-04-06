@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/view/log_in_view.dart';
-import 'package:meme_cloud/view/sign_up_view.dart';
+import 'package:meme_cloud/presentation/view/log_in_view.dart';
+import 'package:meme_cloud/presentation/view/sign_up_view.dart';
 
 class StartView extends StatelessWidget {
   const StartView({super.key});
@@ -16,9 +16,15 @@ class StartView extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const LogInView()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LogInView()),
+                );
               },
-              child: const Text('Login'),
+              child: const Text(
+                'Đăng nhập',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
@@ -28,7 +34,10 @@ class StartView extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const SignUpView()),
                 );
               },
-              child: const Text('Sign Up'),
+              child: const Text(
+                'Đăng Ký',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),

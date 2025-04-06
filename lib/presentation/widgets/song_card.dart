@@ -13,7 +13,14 @@ class SongCard extends StatelessWidget {
       height: 300,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Colors.indigo,
+        color: Colors.blueGrey,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 10),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [

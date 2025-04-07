@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/models/Song.dart';
+import 'package:meme_cloud/models/song.dart';
 import 'package:meme_cloud/presentation/widgets/song_card.dart';
 
 class HomeView extends StatelessWidget {

@@ -18,7 +18,7 @@ class StartView extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const LogInView()),
+                  MaterialPageRoute(builder: (context) => LogInView()),
                 );
               },
               child: const Text(
@@ -31,7 +31,7 @@ class StartView extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SignUpView()),
+                  MaterialPageRoute(builder: (context) => SignUpView()),
                 );
               },
               child: const Text(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FeaturedSection extends StatelessWidget {
-  const FeaturedSection({Key? key}) : super(key: key);
+  const FeaturedSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,9 @@ class FeaturedSection extends StatelessWidget {
                 onPressed: () {},
                 child: const Text(
                   'Xem tất cả',
-                  style: TextStyle(color: Color(0xFF1E88E5)), // Màu xanh lam cho link
+                  style: TextStyle(
+                    color: Color(0xFF1E88E5),
+                  ), // Màu xanh lam cho link
                 ),
               ),
             ],
@@ -55,7 +57,9 @@ class FeaturedSection extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              const Color(0xFF1976D2).withOpacity(0.7), // Gradient xanh lam
+                              const Color(
+                                0xFF1976D2,
+                              ).withOpacity(0.7), // Gradient xanh lam
                             ],
                           ),
                         ),
@@ -94,9 +98,9 @@ class FeaturedSection extends StatelessWidget {
                           radius: 24,
                           child: IconButton(
                             icon: const Icon(
-                              Icons.play_arrow, 
+                              Icons.play_arrow,
                               color: Color(0xFF1976D2), // Màu xanh lam cho icon
-                              size: 32
+                              size: 32,
                             ),
                             onPressed: () {},
                           ),

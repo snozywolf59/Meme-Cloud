@@ -5,7 +5,7 @@ import 'package:meme_cloud/presentation/widgets/home/new_release_section.dart';
 import 'package:meme_cloud/presentation/widgets/home/top_artist.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({Key? key}) : super(key: key);
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {

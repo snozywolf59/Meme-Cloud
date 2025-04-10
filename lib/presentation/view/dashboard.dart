@@ -30,25 +30,30 @@ class DashBoard extends StatelessWidget {
       bottomNavigationBar: ValueListenableBuilder<int>(
         valueListenable: currentPageIndex,
         builder: (context, value, child) {
-          return NavigationBar(
-            destinations: [
-              NavigationDestination(
+          return BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            items: [
+              BottomNavigationBarItem(
                 icon: const Icon(Icons.home),
                 label: 'Home',
               ),
-              NavigationDestination(
+              BottomNavigationBarItem(
                 icon: const Icon(Icons.search),
                 label: 'Search',
               ),
-              NavigationDestination(
+              BottomNavigationBarItem(
                 icon: const Icon(Icons.trending_up),
                 label: 'Trending',
               ),
             ],
-            onDestinationSelected: (int index) {
+            currentIndex: value,
+            selectedItemColor: const Color(0xFF1976D2),
+            unselectedItemColor: Colors.grey,
+            showSelectedLabels: true,
+            showUnselectedLabels: false,
+            onTap: (index) {
               currentPageIndex.value = index;
             },
-            selectedIndex: value,
           );
         },
       ),

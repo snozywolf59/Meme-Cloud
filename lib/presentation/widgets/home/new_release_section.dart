@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:meme_cloud/presentation/view/play_music_view.dart';
 
 class NewReleasesSection extends StatelessWidget {
-  const NewReleasesSection({Key? key}) : super(key: key);
+  const NewReleasesSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +44,9 @@ class NewReleasesSection extends StatelessWidget {
             children: [
               const Text(
                 'Bài hát mới',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0D47A1), // Màu xanh lam đậm cho tiêu đề
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'Xem tất cả',
-                  style: TextStyle(color: Color(0xFF1E88E5)), // Màu xanh lam cho link
-                ),
-              ),
+              TextButton(onPressed: () {}, child: const Text('Xem tất cả')),
             ],
           ),
         ),
@@ -69,56 +60,66 @@ class NewReleasesSection extends StatelessWidget {
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        //Todo: Pass data to MusicPlayerScreen
+                        // and implement the music player functionality
+                        // with the selected song.
+                        // For now, we will just navigate to the screen.
+                        builder: (context) => const MusicPlayerScreen(),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            newSongs[index]['image']!,
+                            fit: BoxFit.cover,
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          newSongs[index]['image']!,
-                          fit: BoxFit.cover,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: 140,
-                      child: Text(
-                        newSongs[index]['title']!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF1565C0), // Màu xanh lam cho tiêu đề bài hát
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 140,
+                        child: Text(
+                          newSongs[index]['title']!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    SizedBox(
-                      width: 140,
-                      child: Text(
-                        newSongs[index]['artist']!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF64B5F6), // Màu xanh lam nhạt cho nghệ sĩ
+                      SizedBox(
+                        width: 140,
+                        child: Text(
+                          newSongs[index]['artist']!,
+                          style: const TextStyle(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

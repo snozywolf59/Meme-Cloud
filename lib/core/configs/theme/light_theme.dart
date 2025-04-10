@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
-  primaryColor: Colors.cyan,
-  primarySwatch: Colors.cyan,
+  primaryColor: Color(0xFF6E44FF),
+  primarySwatch: Colors.indigo,
   colorScheme: ColorScheme.light(
-    primary: Colors.cyan,
-    secondary: Colors.cyanAccent,
+    primary: Color(0xFF6E44FF),
+    secondary: Colors.indigo,
     surface: Colors.white,
     error: Colors.red,
     onPrimary: Colors.white,
@@ -15,8 +15,10 @@ ThemeData lightTheme = ThemeData(
     onError: Colors.white,
   ),
   floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: Colors.cyan,
+    backgroundColor: Color(0xFF6E44FF),
     foregroundColor: Colors.white,
+    focusColor: Colors.white,
+    hoverColor: Colors.white,
   ),
   cardTheme: CardTheme(
     color: Colors.white,
@@ -25,7 +27,6 @@ ThemeData lightTheme = ThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   ),
   buttonTheme: ButtonThemeData(
-    buttonColor: Colors.red,
     textTheme: ButtonTextTheme.primary,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     padding: EdgeInsets.all(16),
@@ -45,7 +46,7 @@ ThemeData lightTheme = ThemeData(
   scaffoldBackgroundColor: Colors.white,
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.cyan,
+      backgroundColor: Color(0xFF6E44FF),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: EdgeInsets.all(16),
     ),

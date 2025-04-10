@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TopArtistsSection extends StatelessWidget {
-  const TopArtistsSection({Key? key}) : super(key: key);
+  const TopArtistsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +26,11 @@ class TopArtistsSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0D47A1), // Màu xanh lam đậm cho tiêu đề
                 ),
               ),
               TextButton(
                 onPressed: () {},
-                child: const Text(
-                  'Xem tất cả',
-                  style: TextStyle(color: Color(0xFF1E88E5)), // Màu xanh lam cho link
-                ),
+                child: const Text('Xem tất cả'),
               ),
             ],
           ),
@@ -81,7 +77,6 @@ class TopArtistsSection extends StatelessWidget {
                     Text(
                       artists[index]['name']!,
                       style: const TextStyle(
-                        color: Color(0xFF1565C0), // Màu xanh lam cho tên nghệ sĩ
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),

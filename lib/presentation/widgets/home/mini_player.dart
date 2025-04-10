@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MiniPlayer extends StatelessWidget {
-  const MiniPlayer({Key? key}) : super(key: key);
+  const MiniPlayer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +70,10 @@ class MiniPlayer extends StatelessWidget {
             ),
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.indigo.withAlpha(30),
                     spreadRadius: 1,
                     blurRadius: 4,
                   ),
@@ -86,7 +85,7 @@ class MiniPlayer extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.skip_next, color: Color(0xFF1976D2)),
+              icon: const Icon(Icons.skip_next, color: Color(0xFF6E44FF)),
               onPressed: () {},
             ),
           ],

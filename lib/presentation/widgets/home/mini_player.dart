@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+
+class MiniPlayer extends StatelessWidget {
+  const MiniPlayer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.15),
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, -2),
+          ),
+        ],
+        border: Border(
+          top: BorderSide(
+            color: const Color(0xFF90CAF9).withOpacity(0.5),
+            width: 1,
+          ),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        leading: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.2),
+                spreadRadius: 1,
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.network(
+              'https://picsum.photos/200/200?random=20',
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Tên bài hát đang phát',
+          style: TextStyle(
+            color: Color(0xFF1565C0),
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: const Text(
+          'Tên nghệ sĩ',
+          style: TextStyle(color: Color(0xFF64B5F6), fontSize: 14),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.skip_previous, color: Color(0xFF1976D2)),
+              onPressed: () {},
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF2196F3),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.play_arrow, color: Colors.white),
+                onPressed: () {},
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.skip_next, color: Color(0xFF1976D2)),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

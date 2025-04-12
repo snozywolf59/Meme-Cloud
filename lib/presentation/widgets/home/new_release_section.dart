@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:meme_cloud/domain/usecases/song/get_song_list.dart';
 import 'package:meme_cloud/presentation/view/play_music_view.dart';
+import 'package:meme_cloud/service_locator.dart';
 
 class NewReleasesSection extends StatelessWidget {
   const NewReleasesSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final songs = serviceLocator<GetSongListUsecase>().call(null);
+    print(songs.toString());
     final List<Map<String, String>> newSongs = [
       {
         'title': 'Bài hát mới 1',

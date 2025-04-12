@@ -28,16 +28,22 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 15),
-    )..repeat();
+    )..stop();
 
     _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      setState(() {
-        if (current < duration) {
-          current += 0.2;
-        } else {
-          current = 0;
-        }
-      });
+      if (_isPlaying) {
+        setState(() {
+          if (current < duration - 0.2) {
+            current += 0.2;
+          } else {
+            current = duration;
+            _isPlaying = false;
+            _animationController.stop();
+            _timer.cancel();
+            // Optionally, you can loop the song or reset the current time
+          }
+        });
+      }
     });
   }
 

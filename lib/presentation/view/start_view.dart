@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/presentation/view/log_in_view.dart';
-import 'package:meme_cloud/presentation/view/sign_up_view.dart';
+import 'package:meme_cloud/presentation/view/auth/log_in_view.dart';
+import 'package:meme_cloud/presentation/view/auth/sign_up_view.dart';
 
 class StartView extends StatelessWidget {
   const StartView({super.key});
@@ -18,7 +18,7 @@ class StartView extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LogInView()),
+                  MaterialPageRoute(builder: (context) => const LogInView()),
                 );
               },
               child: const Text(
@@ -31,7 +31,7 @@ class StartView extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignUpView()),
+                  MaterialPageRoute(builder: (context) => const SignUpView()),
                 );
               },
               child: const Text(

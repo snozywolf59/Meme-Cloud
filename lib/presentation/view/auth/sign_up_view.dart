@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/data/models/create_user_request.dart';
+import 'package:meme_cloud/data/models/auth/create_user_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_up.dart';
-import 'package:meme_cloud/presentation/view/log_in_view.dart';
+import 'package:meme_cloud/presentation/view/auth/log_in_view.dart';
 import 'package:meme_cloud/service_locator.dart';
 
-class SignUpView extends StatelessWidget {
-  SignUpView({super.key});
+class SignUpView extends StatefulWidget {
+  const SignUpView({super.key});
+
+  @override
+  State<SignUpView> createState() => _SignUpViewState();
+}
+
+class _SignUpViewState extends State<SignUpView> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    fullNameController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,18 +47,18 @@ class SignUpView extends StatelessWidget {
             const SizedBox(height: 10),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: passwordController,
-              decoration: InputDecoration(labelText: 'Mật khẩu'),
+              decoration: const InputDecoration(labelText: 'Mật khẩu'),
               obscureText: true,
             ),
             const SizedBox(height: 10),
             TextField(
               controller: confirmPasswordController,
-              decoration: InputDecoration(labelText: 'Nhập lại mật khẩu'),
+              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
               obscureText: true,
             ),
             const SizedBox(height: 20),
@@ -136,7 +151,7 @@ class SignUpView extends StatelessWidget {
                     );
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => LogInView()),
+                      MaterialPageRoute(builder: (context) => const LogInView()),
                     );
                   },
                 );

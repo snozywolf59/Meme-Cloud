@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/models/song.dart';
+import 'package:meme_cloud/domain/entities/song/song.dart';
+
 
 class SongCard extends StatelessWidget {
-  final Song song;
+  final SongEntity song;
 
   const SongCard({super.key, required this.song});
 
@@ -29,7 +30,7 @@ class SongCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                song.imageUrl,
+                song.coverUrl,
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
@@ -54,10 +55,14 @@ class SongCard extends StatelessWidget {
   }
 }
 
-final song = Song(
+final song = SongEntity(
+  id: '1',
   title: 'Sóng gió',
   artist: 'Jack',
-  imageUrl: 'assets/images/sasuke_avt.jpeg',
+  coverUrl: 'assets/images/sasuke_avt.jpeg',
+  url: 'https://example.com/song.mp3',
+  duration: 180,
+  createdAt: DateTime.now(),
 );
 
 void main() => runApp(

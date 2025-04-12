@@ -14,13 +14,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  print( dotenv.env['SUPABASE_URL']);
-  print( dotenv.env['SUPABASE_ANON_KEY']);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await Supabase.initialize(
-    url: 'https://jvqlqzqkqzqjvqlqzqkq.supabase.co',
-    anonKey: 'aaaa'
+    url: dotenv.env['SUPABASE_URL'].toString(),
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'].toString(),
+    authOptions: FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
   await initDependencies();
   runApp(
@@ -39,7 +38,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Meme Cloud',
       theme: provider_package.Provider.of<ThemeProvider>(context).themeData,
-      home: true == false ? DashBoard() : const StartView(),
+      home:
+          Supabase.instance.client.auth.currentSession != null
+              ? const DashBoard()
+              : const StartView(),
       debugShowCheckedModeBanner: false,
     );
   }

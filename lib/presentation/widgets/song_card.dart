@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/domain/entities/song/song.dart';
 
-
 class SongCard extends StatelessWidget {
   final SongEntity song;
 
@@ -30,7 +29,7 @@ class SongCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                song.coverUrl,
+                song.coverUrl.toString(),
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
@@ -38,7 +37,7 @@ class SongCard extends StatelessWidget {
             ),
           ),
           Text(
-            song.title,
+            song.title.toString(),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -46,7 +45,7 @@ class SongCard extends StatelessWidget {
             ),
           ),
           Text(
-            song.artist,
+            song.artist.toString(),
             style: const TextStyle(color: Colors.white70, fontSize: 16),
           ),
         ],
@@ -63,6 +62,8 @@ final song = SongEntity(
   url: 'https://example.com/song.mp3',
   duration: 180,
   createdAt: DateTime.now(),
+  album: 'K-ICM',
+  trackNumber: 3,
 );
 
 void main() => runApp(

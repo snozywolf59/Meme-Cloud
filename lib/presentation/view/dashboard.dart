@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/presentation/view/home_view.dart';
+import 'package:meme_cloud/presentation/view/home/home_view.dart';
 import 'package:meme_cloud/presentation/view/search_view.dart';
 import 'package:meme_cloud/presentation/view/trending_view.dart';
 

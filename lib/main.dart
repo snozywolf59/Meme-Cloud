@@ -13,7 +13,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: 'assets/.env');
+    print('Đã load thành công file .env');
+  } catch (e) {
+    print('Lỗi khi load .env: $e'); // In ra lỗi nếu có
+    throw Exception('Không thể load file .env');
+  }
   //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await Supabase.initialize(

@@ -1,7 +1,10 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:meme_cloud/core/audio/audio_service.dart';
 import 'package:meme_cloud/presentation/view/home/home_view.dart';
 import 'package:meme_cloud/presentation/view/search_view.dart';
 import 'package:meme_cloud/presentation/view/trending_view.dart';
+import 'package:meme_cloud/service_locator.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -35,14 +38,8 @@ class _DashBoardState extends State<DashBoard> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.trending_up),
             label: 'Trending',
@@ -61,5 +58,11 @@ class _DashBoardState extends State<DashBoard> {
       ),
       body: pages[currentPageIndex],
     );
+  }
+
+  @override
+  void dispose() {
+    serviceLocator<AudioHandler>().customAction('dispose');
+    super.dispose();
   }
 }

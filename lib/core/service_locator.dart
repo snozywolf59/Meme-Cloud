@@ -2,11 +2,14 @@ import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:meme_cloud/core/audio/audio_service.dart';
 import 'package:meme_cloud/data/repositories/auth/auth_repository_impl.dart';
+import 'package:meme_cloud/data/repositories/profile/user_repository.dart';
 import 'package:meme_cloud/data/repositories/song/song_supabase_impl.dart';
 import 'package:meme_cloud/data/sources/auth/auth_firebase_service.dart';
 import 'package:meme_cloud/data/sources/auth/auth_supabase_service.dart';
+import 'package:meme_cloud/data/sources/profile/user_service.dart';
 import 'package:meme_cloud/data/sources/song/song_service.dart';
 import 'package:meme_cloud/domain/repositories/auth/auth_repository.dart';
+import 'package:meme_cloud/domain/repositories/profile/user_repository.dart';
 import 'package:meme_cloud/domain/repositories/song/song_repository.dart';
 import 'package:meme_cloud/core/audio/audio_manager.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
@@ -29,6 +32,9 @@ Future<void> initServiceLocator() async {
   serviceLocator.registerSingleton<AuthSupabaseService>(AuthSupabaseService());
 
   serviceLocator.registerSingleton<AuthRepository>(AuthRepositoryImpl());
+
+  serviceLocator.registerSingleton<UserRepository>(UserRepositoryIpml());
+  serviceLocator.registerSingleton<UserService>(UserServiceIplm());
 
   serviceLocator.registerSingleton<SignupUseCase>(SignupUseCase());
 

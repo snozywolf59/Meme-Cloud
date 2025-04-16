@@ -3,6 +3,7 @@ import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
 import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/core/service_locator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({super.key});
@@ -70,6 +71,7 @@ class _LogInViewState extends State<LogInView> {
                     );
                   },
                   (r) {
+                    print(Supabase.instance.client.auth.currentUser);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(

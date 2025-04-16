@@ -1,13 +1,10 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:meme_cloud/core/audio/audio_service.dart';
+import 'package:meme_cloud/core/audio/notifiers/play_button_notifier.dart';
 import 'package:meme_cloud/data/models/song/song_dto.dart';
 import 'package:meme_cloud/core/audio/audio_manager.dart';
-import 'package:meme_cloud/presentation/view/play_music/audio_controller.dart';
-import 'package:meme_cloud/presentation/view/play_music/slider.dart';
-import 'package:meme_cloud/service_locator.dart';
-import 'package:provider/provider.dart';
+import 'package:meme_cloud/presentation/widgets/play_music/audio_controller_btn.dart';
+import 'package:meme_cloud/presentation/widgets/play_music/music_player_slider.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final SongDto song;
@@ -20,23 +17,43 @@ class MusicPlayerScreen extends StatefulWidget {
 
 class _MusicPlayerScreen extends State<MusicPlayerScreen>
     with SingleTickerProviderStateMixin {
-  final AudioManager _audioPlayer = serviceLocator<AudioManager>();
+  final AudioManager _audioManager = serviceLocator<AudioManager>();
   late AnimationController _rotationController;
+  late VoidCallback _isPlayingListener;
 
   @override
   void initState() {
     _initAudioPlayer();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat();
+    _initRotationController();
 
     super.initState();
   }
 
+  Future<void> _initRotationController() async {
+    try {
+      _rotationController = AnimationController(
+        duration: const Duration(seconds: 10),
+        vsync: this,
+      )..repeat();
+      _isPlayingListener = () {
+        if (_audioManager.playButtonNotifier.value == ButtonState.playing) {
+          _rotationController.repeat();
+        } else {
+          _rotationController.stop();
+        }
+      };
+      _audioManager.playButtonNotifier.addListener(_isPlayingListener);
+    } catch (e) {
+      debugPrint('Error initializing rotation controller: $e');
+    }
+  }
+
   Future<void> _initAudioPlayer() async {
     try {
-      await _audioPlayer.removeAllPlaylistAndPlaySong(widget.song);
+      if (_audioManager.isEmptyPlaylist() ||
+          widget.song.id != _audioManager.getCurrentSong().id) {
+        await _audioManager.removeAllPlaylistAndPlaySong(widget.song);
+      }
     } catch (e) {
       debugPrint('Error initializing audio player: $e');
     }
@@ -106,6 +123,7 @@ class _MusicPlayerScreen extends State<MusicPlayerScreen>
   @override
   void dispose() {
     _rotationController.dispose();
+    _audioManager.playButtonNotifier.removeListener(_isPlayingListener);
     super.dispose();
   }
 }

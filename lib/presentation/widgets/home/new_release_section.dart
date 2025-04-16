@@ -4,7 +4,7 @@ import 'package:meme_cloud/data/sources/song/song_service.dart';
 import 'package:meme_cloud/core/audio/audio_manager.dart';
 import 'package:meme_cloud/domain/usecases/song/get_song_list.dart';
 import 'package:meme_cloud/presentation/view/play_music/play_music_view.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:provider/provider.dart';
 

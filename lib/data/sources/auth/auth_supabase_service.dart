@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:meme_cloud/data/models/auth/create_user_request.dart';
 import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSupabaseService {

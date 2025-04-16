@@ -4,7 +4,7 @@ import 'package:meme_cloud/data/models/song/song_dto.dart';
 import 'package:meme_cloud/core/audio/notifiers/play_button_notifier.dart';
 import 'package:meme_cloud/core/audio/notifiers/progress_notifier.dart';
 import 'package:meme_cloud/core/audio/notifiers/repeat_button_notifier.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 
 class AudioManager {
   // Listeners: Updates going to the UI
@@ -18,6 +18,8 @@ class AudioManager {
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
 
   final _audioHandler = serviceLocator<AudioHandler>();
+
+  final currentSongNotifier = ValueNotifier<SongDto>(SongDto.emptySong);
 
   // Events: Calls coming from the UI
   void init() async {
@@ -37,6 +39,7 @@ class AudioManager {
       if (playlist.isEmpty) {
         playlistNotifier.value = [];
         currentSongTitleNotifier.value = '';
+        currentSongNotifier.value = SongDto.emptySong;
       } else {
         final newList = playlist.map((item) => item.title).toList();
         playlistNotifier.value = newList;
@@ -64,7 +67,6 @@ class AudioManager {
   }
 
   void _listenToCurrentPosition() {
-    print('Listening to  current position');
     AudioService.position.listen((position) {
       final oldState = progressNotifier.value;
       progressNotifier.value = ProgressBarState(
@@ -100,6 +102,7 @@ class AudioManager {
   void _listenToChangesInSong() {
     _audioHandler.mediaItem.listen((mediaItem) {
       currentSongTitleNotifier.value = mediaItem?.title ?? '';
+      currentSongNotifier.value = SongDto.fromMediaItem(mediaItem!);
       _updateSkipButtons();
     });
   }
@@ -123,6 +126,15 @@ class AudioManager {
 
   void previous() => _audioHandler.skipToPrevious();
   void next() => _audioHandler.skipToNext();
+
+  bool isEmptyPlaylist() {
+    return _audioHandler.queue.value.isEmpty;
+  }
+
+  SongDto getCurrentSong() {
+    var mediaItem = _audioHandler.mediaItem.value;
+    return SongDto.fromMediaItem(mediaItem!);
+  }
 
   void repeat() {
     repeatButtonNotifier.nextState();
@@ -154,14 +166,10 @@ class AudioManager {
     for (var i = _audioHandler.queue.value.length - 1; i >= 0; i--) {
       await _audioHandler.removeQueueItemAt(i);
     }
-    final mediaItem = MediaItem(
-      id: song.id,
-      artist: song.artist,
-      title: song.title,
-      extras: {'url': song.url},
-    );
+    final mediaItem = song.toMediaItem();
 
     await _audioHandler.addQueueItem(mediaItem);
+    _audioHandler.stop();
     print('list song: ${_audioHandler.queue.value}');
   }
 

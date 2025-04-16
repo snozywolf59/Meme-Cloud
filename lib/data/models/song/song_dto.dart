@@ -1,3 +1,5 @@
+import 'package:audio_service/audio_service.dart';
+
 class SongDto {
   final String id;
   final String title;
@@ -22,4 +24,37 @@ class SongDto {
       url: json['url'] as String,
     );
   }
+
+  factory SongDto.fromMediaItem(MediaItem mediaItem) {
+    try {
+      return SongDto(
+        id: mediaItem.id,
+        title: mediaItem.title,
+        artist: mediaItem.artist ?? '',
+        coverUrl: mediaItem.artUri?.toString() ?? '',
+        url: mediaItem.extras?['url'] as String? ?? '',
+      );
+    } catch (e) {
+      print("error while make songdto from mediaitem ${e.toString()}");
+      return SongDto.emptySong;
+    }
+  }
+
+  MediaItem toMediaItem() {
+    return MediaItem(
+      id: id,
+      title: title,
+      artist: artist,
+      artUri: Uri.parse(coverUrl),
+      extras: {'url': url},
+    );
+  }
+
+  static SongDto emptySong = SongDto(
+    id: '',
+    title: '',
+    artist: '',
+    coverUrl: '',
+    url: '',
+  );
 }

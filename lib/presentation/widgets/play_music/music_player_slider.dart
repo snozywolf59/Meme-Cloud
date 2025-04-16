@@ -7,7 +7,7 @@ import 'package:meme_cloud/core/audio/audio_service.dart';
 import 'package:meme_cloud/core/audio/audio_manager.dart';
 import 'package:meme_cloud/core/audio/notifiers/play_button_notifier.dart';
 import 'package:meme_cloud/core/audio/notifiers/progress_notifier.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:flutter/material.dart';
 // class MySlider extends StatefulWidget {
 //   const MySlider({super.key});

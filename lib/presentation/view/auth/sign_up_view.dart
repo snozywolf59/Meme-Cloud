@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meme_cloud/data/models/auth/create_user_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_up.dart';
 import 'package:meme_cloud/presentation/view/auth/log_in_view.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});

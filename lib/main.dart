@@ -4,7 +4,7 @@ import 'package:meme_cloud/core/audio/audio_manager.dart';
 
 import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/presentation/view/start_view.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:provider/provider.dart' as provider_package;
 
 import 'package:meme_cloud/core/configs/theme/theme_provider.dart';

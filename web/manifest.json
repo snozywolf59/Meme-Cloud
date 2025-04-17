@@ -1,6 +1,6 @@
 {
-    "name": "meme_cloud",
-    "short_name": "meme_cloud",
+    "name": "memecloud",
+    "short_name": "memecloud",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

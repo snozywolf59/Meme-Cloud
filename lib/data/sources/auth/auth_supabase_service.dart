@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:meme_cloud/data/models/auth/create_user_request.dart';
-import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:memecloud/data/models/auth/create_user_request.dart';
+import 'package:memecloud/data/models/auth/sign_in_request.dart';
+import 'package:memecloud/core/service_locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSupabaseService {
@@ -25,7 +25,7 @@ class AuthSupabaseService {
         return Left('Unknown error occurred');
       }
     } on AuthException catch (e) {
-      return Left(e.toString());
+      return Left(e);
     }
   }
 

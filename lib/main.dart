@@ -1,7 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:meme_cloud/firebase_options.dart';
+import 'package:meme_cloud/core/audio/audio_manager.dart';
 
 import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/presentation/view/start_view.dart';
@@ -27,7 +26,9 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY'].toString(),
     authOptions: FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
-  await initDependencies();
+
+  await initServiceLocator();
+
   runApp(
     provider_package.ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -36,11 +37,29 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    serviceLocator<AudioManager>().init();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    serviceLocator<AudioManager>().dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Retain the original build implementation.
     return MaterialApp(
       title: 'Meme Cloud',
       theme: provider_package.Provider.of<ThemeProvider>(context).themeData,

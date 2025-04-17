@@ -1,4 +1,4 @@
-import 'dart:developer';
+
 
 import 'package:dartz/dartz.dart';
 import 'package:meme_cloud/data/models/song/song_dto.dart';
@@ -37,7 +37,6 @@ class SongSupabaseService extends SongService {
       }).toList();
       return Right(songsList);
     } catch (e) {
-      print('Error parsing songs: $e');
       return Left(e.toString());
     }
   }

@@ -32,8 +32,7 @@ Future<void> initServiceLocator() async {
 
   serviceLocator.registerSingleton<UserRepository>(UserRepositoryIpml());
   serviceLocator.registerSingleton<UserService>(UserServiceIplm());
-
-  serviceLocator.registerSingleton<SignupUseCase>(SignupUseCase());
+  serviceLocator.registerSingleton<SignUpUseCase>(SignUpUseCase());
 
   serviceLocator.registerSingleton<SignInUseCase>(SignInUseCase());
 

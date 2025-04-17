@@ -12,10 +12,14 @@ class SignUpView extends StatefulWidget {
 }
 
 class _SignUpViewState extends State<SignUpView> {
+  bool isAgree = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+
+  bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -26,142 +30,188 @@ class _SignUpViewState extends State<SignUpView> {
     super.dispose();
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _handleSignUp() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+    final fullName = fullNameController.text.trim();
+
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      _showSnackBar('Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
+
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+      _showSnackBar('Email không hợp lệ!');
+      return;
+    }
+
+    if (password.length < 6 || confirmPassword.length < 6) {
+      _showSnackBar('Mật khẩu phải có ít nhất 6 ký tự!');
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showSnackBar('Mật khẩu không khớp!');
+      return;
+    }
+
+    final result = await serviceLocator<SignUpUseCase>().call(
+      CreateUserRequest(
+        email: email,
+        password: password,
+        fullName: fullName,
+      ),
+    );
+
+    result.fold(
+          (l) {
+        _showSnackBar('Đăng ký không thành công! Lỗi $l');
+      },
+          (r) {
+        _showSnackBar('Đăng ký thành công!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LogInView()),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Đăng Ký',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: fullNameController,
-              decoration: const InputDecoration(labelText: 'Họ và tên'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Bằng việc đăng ký, bạn đồng ý với các điều khoản và chính sách của chúng tôi.',
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (passwordController.text != confirmPasswordController.text) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mật khẩu không khớp!')),
-                  );
-                  return;
-                }
-                if (emailController.text.isEmpty ||
-                    passwordController.text.isEmpty ||
-                    fullNameController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vui lòng điền đầy đủ thông tin!'),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Đăng Ký',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+
+                TextField(
+                  controller: fullNameController,
+                  decoration: const InputDecoration(labelText: 'Họ và tên'),
+                ),
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                ),
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: passwordController,
+                  obscureText: obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Mật khẩu',
+                    suffixIcon: IconButton(
+                      icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
                     ),
-                  );
-                  return;
-                }
-                if (passwordController.text.length < 6) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Mật khẩu phải có ít nhất 6 ký tự!'),
-                    ),
-                  );
-                  return;
-                }
-                if (!RegExp(
-                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                ).hasMatch(emailController.text)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Email không hợp lệ!')),
-                  );
-                  return;
-                }
-                if (passwordController.text != confirmPasswordController.text) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mật khẩu không khớp!')),
-                  );
-                  return;
-                }
-                if (confirmPasswordController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vui lòng nhập lại mật khẩu!'),
-                    ),
-                  );
-                  return;
-                }
-                if (confirmPasswordController.text.length < 6) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Mật khẩu phải có ít nhất 6 ký tự!'),
-                    ),
-                  );
-                  return;
-                }
-                if (!RegExp(
-                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                ).hasMatch(emailController.text)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Email không hợp lệ!')),
-                  );
-                  return;
-                }
-                var result = await serviceLocator<SignupUseCase>().call(
-                  CreateUserRequest(
-                    email: emailController.text.toString(),
-                    password: passwordController.text.toString(),
-                    fullName: fullNameController.text.toString(),
                   ),
-                );
-                result.fold(
-                  (l) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đăng ký không thành công! Lỗi $l'),
+                ),
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Nhập lại mật khẩu',
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          obscureConfirmPassword = !obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isAgree,
+                      onChanged: (value) {
+                        setState(() {
+                          isAgree = value ?? false;
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: RichText(
+                        text: const TextSpan(
+                          text: 'Đồng ý với ',
+                          style: TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(
+                              text: 'Điều khoản & Chính sách',
+                              style: TextStyle(
+                                color: Colors.deepPurple,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                  (r) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đăng ký thành công!')),
-                    );
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LogInView()),
-                    );
-                  },
-                );
-              },
-              child: const Text(
-                'Đăng ký',
-                style: TextStyle(color: Colors.white),
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _handleSignUp,
+                    child: const Text('Đăng ký', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Đã có tài khoản? '),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LogInView()),
+                        );
+                      },
+                      child: const Text(
+                        'Đăng nhập',
+                        style: TextStyle(
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

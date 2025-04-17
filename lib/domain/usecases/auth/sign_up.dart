@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:meme_cloud/domain/repositories/auth/auth_repository.dart';
 import 'package:meme_cloud/core/service_locator.dart';
 
-class SignupUseCase implements UseCase<Either, CreateUserRequest> {
+class SignUpUseCase implements UseCase<Either, CreateUserRequest> {
   @override
   Future<Either> call(CreateUserRequest params) {
     return serviceLocator<AuthRepository>().signUp(

@@ -1,19 +1,18 @@
 
 
 import 'package:dartz/dartz.dart';
+import 'package:meme_cloud/common/supabase.dart';
 import 'package:meme_cloud/data/models/song/song_dto.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class SongService {
   Future<Either> fetchSongList();
 }
 
 class SongSupabaseService extends SongService {
-  final _supabaseClient = Supabase.instance.client;
   @override
   Future<Either> fetchSongList() async {
     try {
-      final response = await _supabaseClient
+      final response = await supabase
         .from('songs')
         .select('''
       id,

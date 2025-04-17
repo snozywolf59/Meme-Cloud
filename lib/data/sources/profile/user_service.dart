@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:meme_cloud/common/supabase.dart';
 import 'package:meme_cloud/domain/entities/auth/user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mime/mime.dart';
@@ -20,18 +21,18 @@ abstract class UserService {
 }
 
 class UserServiceIplm extends UserService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+
   final String _bucketName = 'images';
   final String _avatarFolder = 'avatar';
 
   @override
   Future<Either> getCurrentUser() async {
     try {
-      User? user = _supabase.auth.currentUser;
+      User? user = supabase.auth.currentUser;
       if (user == null) return Left('User has not logged in');
       String id = user.id;
       final userJson =
-          await _supabase.from('users').select().eq('id', id).single();
+          await supabase.from('users').select().eq('id', id).single();
       return Right(AppUser.fromJson(userJson));
     } catch (e) {
       return Left('Error $e');
@@ -46,14 +47,14 @@ class UserServiceIplm extends UserService {
 
   @override
   Future<String?> uploadAvatar(File file) async {
-    final userId = _supabase.auth.currentUser?.id;
+    final userId = supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
     final mimeType = lookupMimeType(file.path);
     final fileExt = _extensionFromMime(mimeType) ?? file.path.split('.').last;
     final filePath = '$_avatarFolder/$userId.$fileExt';
 
-    await _supabase.storage
+    await supabase.storage
         .from(_bucketName)
         .upload(
           filePath,
@@ -61,12 +62,12 @@ class UserServiceIplm extends UserService {
           fileOptions: FileOptions(contentType: mimeType, upsert: true),
         );
 
-    final publicUrl = _supabase.storage
+    final publicUrl = supabase.storage
         .from(_bucketName)
         .getPublicUrl(filePath);
 
     // Lưu vào DB nếu cần
-    await _supabase
+    await supabase
         .from('users')
         .update({'avatar_url': publicUrl})
         .eq('id', userId);
@@ -76,9 +77,9 @@ class UserServiceIplm extends UserService {
 
   @override
   Future<String?> getAvatarUrl() async {
-    String userId = _supabase.auth.currentUser!.id;
+    String userId = supabase.auth.currentUser!.id;
     final res =
-        await Supabase.instance.client
+        await supabase
             .from('users')
             .select('avatar_url')
             .eq('id', userId)
@@ -90,7 +91,7 @@ class UserServiceIplm extends UserService {
   /// Delete avatar (optional)
   @override
   Future<void> deleteAvatar(String userId) async {
-    final list = await _supabase.storage
+    final list = await supabase.storage
         .from(_bucketName)
         .list(path: _avatarFolder);
 
@@ -102,12 +103,12 @@ class UserServiceIplm extends UserService {
     }
 
     if (file != null) {
-      await _supabase.storage.from(_bucketName).remove([
+      await supabase.storage.from(_bucketName).remove([
         '$_avatarFolder/${file.name}',
       ]);
     }
 
-    await _supabase
+    await supabase
         .from('profiles')
         .update({'avatar_url': null})
         .eq('id', userId);

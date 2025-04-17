@@ -243,15 +243,8 @@ class _ProfileViewState extends State<ProfileView> {
 
     try {
       serviceLocator<AuthRepository>().signOut();
-      sleep(const Duration(seconds: 2));
 
       Navigator.pop(context); // Đóng loading
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const StartView()),
-        (route) => false,
-      );
     } catch (e) {
       Navigator.pop(context); // Đóng loading
       scaffoldMessenger.showSnackBar(

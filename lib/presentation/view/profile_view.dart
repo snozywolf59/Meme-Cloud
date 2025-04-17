@@ -1,228 +1,289 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:meme_cloud/core/service_locator.dart';
+import 'package:meme_cloud/domain/repositories/auth/auth_repository.dart';
+import 'package:meme_cloud/presentation/view/start_view.dart';
 
-void main() {
-  runApp(MyApp());
-}
+class ProfileView extends StatefulWidget {
+  const ProfileView({super.key});
 
-class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'User Profile',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: ProfileScreen(),
-    );
-  }
+  State<ProfileView> createState() => _ProfileViewState();
 }
 
-class ProfileScreen extends StatefulWidget {
-  @override
-  _ProfileScreenState createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileViewState extends State<ProfileView> {
   String fullName = "Nguyễn Văn A";
-  String userEmail = "nguyenvana@gmail.com";
-  String userAvatarUrl = "https://randomuser.me/api/portraits/men/1.jpg";
-
-  late TextEditingController fullNameController;
-  late TextEditingController emailController;
-
-  @override
-  void initState() {
-    fullNameController = TextEditingController(text: fullName);
-    emailController = TextEditingController(text: userEmail);
-    super.initState();
-  }
-
-  Future<void> _changeName() async {
-    final newName = await showDialog<String>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Đổi tên'),
-            content: TextField(
-              decoration: InputDecoration(hintText: "Nhập tên mới"),
-              controller: fullNameController,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Hủy'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final newName =
-                      (context as Element)
-                              .findAncestorWidgetOfExactType<AlertDialog>()!
-                              .content
-                          as TextField;
-                  Navigator.pop(
-                    context,
-                    (newName.controller as TextEditingController).text,
-                  );
-                },
-                child: Text('Lưu'),
-              ),
-            ],
-          ),
-    );
-
-    if (newName != null && newName.isNotEmpty) {
-      setState(() {
-        fullName = newName;
-      });
-    }
-  }
-
-  Future<void> _changeAvatar() async {
-    // Trong thực tế, bạn sẽ thêm logic để chọn ảnh từ gallery hoặc chụp ảnh mới
-    // Đây chỉ là ví dụ đơn giản
-    final newAvatar = await showDialog<String>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Đổi avatar'),
-            content: Text('Bạn muốn chọn ảnh từ thư viện hay chụp ảnh mới?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  // Giả lập chọn ảnh từ thư viện
-                  Navigator.pop(
-                    context,
-                    "https://randomuser.me/api/portraits/men/${DateTime.now().second % 100}.jpg",
-                  );
-                },
-                child: Text('Thư viện'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Giả lập chụp ảnh mới
-                  Navigator.pop(
-                    context,
-                    "https://randomuser.me/api/portraits/women/${DateTime.now().second % 100}.jpg",
-                  );
-                },
-                child: Text('Chụp ảnh'),
-              ),
-            ],
-          ),
-    );
-
-    if (newAvatar != null) {
-      setState(() {
-        userAvatarUrl = newAvatar;
-      });
-    }
-  }
-
-  Future<void> _changePassword() async {
-    await showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Đổi mật khẩu'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(hintText: "Mật khẩu hiện tại"),
-                ),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(hintText: "Mật khẩu mới"),
-                ),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Nhập lại mật khẩu mới",
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Hủy'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Thêm logic xác thực và đổi mật khẩu ở đây
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đổi mật khẩu thành công!')),
-                  );
-                },
-                child: Text('Lưu'),
-              ),
-            ],
-          ),
-    );
-  }
+  String email = "nguyenvana@example.com";
+  bool isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Hồ sơ cá nhân'), centerTitle: true),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text('Hồ sơ cá nhân'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: _toggleDarkMode,
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            SizedBox(height: 20),
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: NetworkImage(userAvatarUrl),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.edit, color: Colors.white),
-                    onPressed: _changeAvatar,
-                  ),
-                ),
-              ],
+            _buildProfileHeader(),
+            const SizedBox(height: 24),
+            _buildProfileInfo(),
+            const SizedBox(height: 24),
+            _buildActionButtons(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary,
+              width: 3,
             ),
-            SizedBox(height: 20),
-            Card(
-              child: ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Họ và tên'),
-                subtitle: Text(fullName),
-                trailing: IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: _changeName,
-                ),
+          ),
+          child: ClipOval(
+            child: Image.network(
+              'https://example.com/avatar.jpg', // Replace with your image URL
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.person,
+                  size: 60,
+                  color: Theme.of(context).colorScheme.primary,
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          fullName,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Text(email, style: Theme.of(context).textTheme.bodyMedium),
+      ],
+    );
+  }
+
+  Widget _buildProfileInfo() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Họ và tên'),
+              subtitle: Text(fullName),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: _editFullName,
               ),
             ),
-            Card(
-              child: ListTile(
-                leading: Icon(Icons.email),
-                title: Text('Email'),
-                subtitle: Text(userEmail),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: Icon(Icons.lock),
-              label: Text('Đổi mật khẩu'),
-              onPressed: _changePassword,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.email),
+              title: const Text('Email'),
+              subtitle: Text(email),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.lock),
+            label: const Text('Đổi mật khẩu'),
+            onPressed: _changePassword,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.logout),
+            label: const Text('Đăng xuất'),
+            onPressed: _logout,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // TODO: set dark mode
+  void _toggleDarkMode() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+    // Implement your dark mode logic here
+  }
+
+  void _editFullName() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String newName = fullName;
+        return AlertDialog(
+          title: const Text('Sửa họ tên'),
+          content: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Họ và tên mới'),
+            controller: TextEditingController(text: fullName),
+            onChanged: (value) => newName = value,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  fullName = newName;
+                });
+                Navigator.pop(context);
+                // Call your update function here
+              },
+              child: const Text('Lưu'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _changePassword() {
+    // Implement your change password logic here
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Đổi mật khẩu'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Mật khẩu hiện tại'),
+              ),
+              TextField(
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Mật khẩu mới'),
+              ),
+              TextField(
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Xác nhận mật khẩu mới'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // Call your password change function here
+              },
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => _LogoutConfirmationDialog(
+            onConfirm: () => _performLogout(context),
+          ),
+    );
+  }
+
+  void _performLogout(BuildContext context) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      serviceLocator<AuthRepository>().signOut();
+      sleep(const Duration(seconds: 2));
+
+      Navigator.pop(context); // Đóng loading
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const StartView()),
+        (route) => false,
+      );
+    } catch (e) {
+      Navigator.pop(context); // Đóng loading
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Đăng xuất thất bại: ${e.toString()}')),
+      );
+    }
+  }
+}
+
+class _LogoutConfirmationDialog extends StatelessWidget {
+  final VoidCallback onConfirm;
+
+  const _LogoutConfirmationDialog({required this.onConfirm});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Đăng xuất'),
+      content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            onConfirm();
+          },
+          child: const Text('Đăng xuất'),
+        ),
+      ],
     );
   }
 }

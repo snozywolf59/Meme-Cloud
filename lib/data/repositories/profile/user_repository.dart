@@ -14,19 +14,12 @@ class UserRepositoryIpml extends UserRepository {
   }
 
   @override
-  Future<Either> saveUser(AppUser user) {
-    // TODO: implement saveUser
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<Either> changeAvt() {
-    // TODO: implement changeAvt
-    throw UnimplementedError();
-  }
-
-  @override
   Future<Either> changePassword(String newPassword) async {
     return await serviceLocator<UserService>().changePassword(newPassword);
+  }
+
+  @override
+  Future<String?> getAvatarUrl() async {
+    return await serviceLocator<UserService>().getAvatarUrl();
   }
 }

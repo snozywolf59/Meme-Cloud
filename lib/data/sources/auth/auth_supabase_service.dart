@@ -5,7 +5,7 @@ import 'package:meme_cloud/core/service_locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSupabaseService {
-  final SupabaseClient _supabaseClient = serviceLocator<SupabaseClient>();
+  final SupabaseClient _supabaseClient = Supabase.instance.client;
 
   AuthSupabaseService();
 
@@ -34,9 +34,7 @@ class AuthSupabaseService {
       final response = await _supabaseClient.auth.signUp(
         email: createUserReq.email,
         password: createUserReq.password,
-        data: {
-          'display_name': createUserReq.fullName,
-        },
+        data: {'display_name': createUserReq.fullName},
       );
       if (response.user != null) {
         return Right(response.user);

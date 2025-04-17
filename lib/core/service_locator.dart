@@ -15,7 +15,6 @@ import 'package:meme_cloud/core/audio/audio_manager.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_up.dart';
 import 'package:meme_cloud/domain/usecases/song/get_song_list.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -26,8 +25,6 @@ Future<void> initServiceLocator() async {
   serviceLocator.registerSingleton<AuthFirebaseService>(
     AuthFirebaseServiceImpl(),
   );
-
-  serviceLocator.registerSingleton<SupabaseClient>(Supabase.instance.client);
 
   serviceLocator.registerSingleton<AuthSupabaseService>(AuthSupabaseService());
 

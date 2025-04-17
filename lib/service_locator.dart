@@ -24,7 +24,7 @@ Future<void> initDependencies() async {
 
   serviceLocator.registerSingleton<AuthRepository>(AuthRepositoryImpl());
 
-  serviceLocator.registerSingleton<SignupUseCase>(SignupUseCase());
+  serviceLocator.registerSingleton<SignUpUseCase>(SignUpUseCase());
 
   serviceLocator.registerSingleton<SignInUseCase>(SignInUseCase());
 

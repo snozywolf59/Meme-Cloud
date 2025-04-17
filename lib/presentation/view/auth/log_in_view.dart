@@ -171,7 +171,7 @@ class _LogInViewState extends State<LogInView> {
                   ],
                 ),
 
-                const Spacer(),
+                const Spacer(flex: 2),
 
                 /// Sign up
                 Row(

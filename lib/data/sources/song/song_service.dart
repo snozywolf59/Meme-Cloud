@@ -5,6 +5,8 @@ import 'package:meme_cloud/data/models/song/song_dto.dart';
 abstract class SongService {
   Future<Either> fetchSongList();
   Future<Either> toggleLike(String songId);
+
+  Future<Either> getLikeSongsList();
 }
 
 class SongSupabaseService extends SongService {
@@ -75,6 +77,40 @@ class SongSupabaseService extends SongService {
                 .select();
         return Right(response);
       }
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either> getLikeSongsList() async {
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return Left('User not authenticated');
+      }
+
+      final response = await supabase
+          .from('liked_songs')
+          .select('songs(*)')
+          .eq('user_id', userId);
+
+      final songsList = (response as List)
+          .map((item) {
+            final song = item['songs'];
+            final songMap = {
+              'id': song['id'],
+              'title': song['title'],
+              'artist': song['artist'],
+              'cover_url': song['cover_url'],
+              'audio_url': song['audio_url'],
+              'is_liked': true, // Since these are liked songs
+            };
+            return SongDto.fromJson(songMap);
+          })
+          .toList();
+
+      return Right(songsList);
     } catch (e) {
       return Left(e.toString());
     }

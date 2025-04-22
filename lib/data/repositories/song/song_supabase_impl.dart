@@ -13,4 +13,10 @@ class SongSupabaseImpl extends SongRepository {
   Future<Either> toggleLike(String songId) async {
     return await serviceLocator<SongService>().toggleLike(songId);
   }
+
+  @override
+  Future<Either> getLikedSongslist() async {
+    return await serviceLocator<SongService>().getLikeSongsList();
+  }
+
 }

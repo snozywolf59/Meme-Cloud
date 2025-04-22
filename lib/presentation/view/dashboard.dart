@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/core/audio/audio_service.dart';
 import 'package:meme_cloud/presentation/view/home/home_view.dart';
+import 'package:meme_cloud/presentation/view/liked_song_view.dart';
 import 'package:meme_cloud/presentation/view/profile_view.dart';
 import 'package:meme_cloud/presentation/view/search_view.dart';
 import 'package:meme_cloud/presentation/view/trending_view.dart';
@@ -17,7 +18,7 @@ class DashBoard extends StatefulWidget {
 class _DashBoardState extends State<DashBoard> {
   int currentPageIndex = 0;
 
-  final List<Widget> pages = const [HomeView(), SearchView(), TrendingView()];
+  final List<Widget> pages = const [HomeView(), SearchView(), TrendingView(), LikedSongsView()];
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +42,7 @@ class _DashBoardState extends State<DashBoard> {
             icon: Icon(Icons.trending_up),
             label: 'Trending',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.heat_pump_rounded), label: 'Liked Songs')
         ],
         currentIndex: currentPageIndex,
         selectedItemColor: const Color(0xFF1976D2),

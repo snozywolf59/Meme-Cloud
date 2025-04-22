@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/core/audio/audio_manager.dart';
+import 'package:meme_cloud/common/audio_manager.dart';
+
 import 'package:meme_cloud/core/audio/notifiers/play_button_notifier.dart';
 import 'package:meme_cloud/core/audio/notifiers/repeat_button_notifier.dart';
 import 'package:meme_cloud/core/service_locator.dart';

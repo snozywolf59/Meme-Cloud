@@ -11,10 +11,11 @@ import 'package:meme_cloud/data/sources/song/song_service.dart';
 import 'package:meme_cloud/domain/repositories/auth/auth_repository.dart';
 import 'package:meme_cloud/domain/repositories/profile/user_repository.dart';
 import 'package:meme_cloud/domain/repositories/song/song_repository.dart';
-import 'package:meme_cloud/core/audio/audio_manager.dart';
+import 'package:meme_cloud/common/audio_manager.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_up.dart';
 import 'package:meme_cloud/domain/usecases/song/get_song_list.dart';
+import 'package:meme_cloud/domain/usecases/song/toggle_like.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -41,6 +42,8 @@ Future<void> initServiceLocator() async {
   serviceLocator.registerSingleton<SongService>(SongSupabaseService());
 
   serviceLocator.registerSingleton<GetSongListUsecase>(GetSongListUsecase());
+
+  serviceLocator.registerSingleton<ToggleLikeUsecase>(ToggleLikeUsecase());
 
   serviceLocator.registerSingleton<AudioPlayerService>(AudioPlayerService());
 }

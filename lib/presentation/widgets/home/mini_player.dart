@@ -1,6 +1,6 @@
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:meme_cloud/core/audio/audio_manager.dart';
+import 'package:meme_cloud/common/audio_manager.dart';
 import 'package:meme_cloud/core/audio/notifiers/progress_notifier.dart';
 import 'package:meme_cloud/core/service_locator.dart';
 import 'package:meme_cloud/presentation/widgets/play_music/audio_controller_btn.dart';

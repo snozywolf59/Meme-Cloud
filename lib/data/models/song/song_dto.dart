@@ -6,6 +6,7 @@ class SongDto {
   final String artist;
   final String coverUrl;
   final String url;
+  final bool isLiked;
 
   SongDto({
     required this.id,
@@ -13,6 +14,7 @@ class SongDto {
     required this.artist,
     required this.coverUrl,
     required this.url,
+    this.isLiked = false,
   });
 
   factory SongDto.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class SongDto {
       artist: json['artist'] as String,
       coverUrl: json['cover_url'] as String,
       url: json['url'] as String,
+      isLiked: json['is_liked'] as bool? ?? false,
     );
   }
 

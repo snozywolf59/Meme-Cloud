@@ -5,8 +5,12 @@ import 'package:meme_cloud/core/service_locator.dart';
 
 class SongSupabaseImpl extends SongRepository {
   @override
-  Future<Either> getSongList() async{
+  Future<Either> getSongList() async {
     return await serviceLocator<SongService>().fetchSongList();
   }
-  
+
+  @override
+  Future<Either> toggleLike(String songId) async {
+    return await serviceLocator<SongService>().toggleLike(songId);
+  }
 }

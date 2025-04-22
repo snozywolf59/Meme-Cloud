@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:meme_cloud/common/audio_manager.dart';
 import 'package:meme_cloud/core/audio/notifiers/play_button_notifier.dart';
 import 'package:meme_cloud/data/models/song/song_dto.dart';
-import 'package:meme_cloud/core/audio/audio_manager.dart';
+import 'package:meme_cloud/domain/usecases/song/toggle_like.dart';
+import 'package:meme_cloud/core/service_locator.dart';
+
 import 'package:meme_cloud/presentation/widgets/play_music/audio_controller_btn.dart';
 import 'package:meme_cloud/presentation/widgets/play_music/music_player_slider.dart';
-import 'package:meme_cloud/core/service_locator.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final SongDto song;
@@ -18,14 +20,17 @@ class MusicPlayerScreen extends StatefulWidget {
 class _MusicPlayerScreen extends State<MusicPlayerScreen>
     with SingleTickerProviderStateMixin {
   final AudioManager _audioManager = serviceLocator<AudioManager>();
+  final ToggleLikeUsecase _toggleLikeUsecase =
+      serviceLocator<ToggleLikeUsecase>();
   late AnimationController _rotationController;
   late VoidCallback _isPlayingListener;
+  bool _isLiked = false;
 
   @override
   void initState() {
     _initAudioPlayer();
     _initRotationController();
-
+    _isLiked = widget.song.isLiked;
     super.initState();
   }
 
@@ -59,10 +64,33 @@ class _MusicPlayerScreen extends State<MusicPlayerScreen>
     }
   }
 
+  Future<void> _toggleLike() async {
+    try {
+      final result = await _toggleLikeUsecase(widget.song.id);
+      result.fold(
+        (error) => debugPrint('Error toggling like: $error'),
+        (success) => setState(() => _isLiked = !_isLiked),
+      );
+    } catch (e) {
+      debugPrint('Error toggling like: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Now Playing')),
+      appBar: AppBar(
+        title: Text('Now Playing'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isLiked ? Icons.favorite : Icons.favorite_border,
+              color: _isLiked ? Colors.red : null,
+            ),
+            onPressed: _toggleLike,
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -122,8 +150,8 @@ class _MusicPlayerScreen extends State<MusicPlayerScreen>
 
   @override
   void dispose() {
-    _rotationController.dispose();
     _audioManager.playButtonNotifier.removeListener(_isPlayingListener);
+    _rotationController.dispose();
     super.dispose();
   }
 }

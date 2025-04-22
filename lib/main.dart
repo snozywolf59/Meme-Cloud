@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:meme_cloud/common/audio_manager.dart';
 import 'package:meme_cloud/common/supabase.dart';
-import 'package:meme_cloud/core/audio/audio_manager.dart';
 
 import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/presentation/view/start_view.dart';
@@ -24,11 +24,7 @@ Future<void> main() async {
   }
   //await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'].toString(),
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'].toString(),
-    authOptions: FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
-  );
+  await initSupabase();
 
   await initServiceLocator();
 

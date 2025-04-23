@@ -7,5 +7,5 @@ abstract class AuthRepository {
 
   Future<Either> signUp(CreateUserRequest createUserRequest);
 
-  Future<void> signOut();
+  void signOut();
 }

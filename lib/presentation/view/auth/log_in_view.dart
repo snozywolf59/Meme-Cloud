@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
-import 'package:meme_cloud/presentation/view/dashboard.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:meme_cloud/presentation/view/auth/sign_up_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -140,16 +138,28 @@ class _LogInViewState extends State<LogInView> {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Sign In Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    var result = await serviceLocator<SignInUseCase>().call(
-                      SignInRequest(
-                        email: emailController.text,
-                        password: passwordController.text,
+                /// Sign In Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      var result = await serviceLocator<SignInUseCase>().call(
+                        SignInRequest(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        ),
+                      );
+                      result.fold((l) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Đăng nhập thất bại: $l')),
+                        );
+                      }, (r) {});
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
                       ),
                     );
                     result.fold(

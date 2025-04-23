@@ -2,9 +2,11 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/core/audio/audio_service.dart';
 import 'package:meme_cloud/presentation/view/home/home_view.dart';
+import 'package:meme_cloud/presentation/view/liked_song_view.dart';
+import 'package:meme_cloud/presentation/view/profile_view.dart';
 import 'package:meme_cloud/presentation/view/search_view.dart';
 import 'package:meme_cloud/presentation/view/trending_view.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -16,7 +18,7 @@ class DashBoard extends StatefulWidget {
 class _DashBoardState extends State<DashBoard> {
   int currentPageIndex = 0;
 
-  final List<Widget> pages = const [HomeView(), SearchView(), TrendingView()];
+  final List<Widget> pages = const [HomeView(), SearchView(), TrendingView(), LikedSongsView()];
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +29,7 @@ class _DashBoardState extends State<DashBoard> {
           IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuAqi5s1FOI-T3qoE_2HD1avj69-gvq2cvIw&s',
-              ),
-            ),
+            child: avatar(),
           ),
         ],
       ),
@@ -44,6 +42,7 @@ class _DashBoardState extends State<DashBoard> {
             icon: Icon(Icons.trending_up),
             label: 'Trending',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.heat_pump_rounded), label: 'Liked Songs')
         ],
         currentIndex: currentPageIndex,
         selectedItemColor: const Color(0xFF1976D2),
@@ -57,6 +56,24 @@ class _DashBoardState extends State<DashBoard> {
         },
       ),
       body: pages[currentPageIndex],
+    );
+  }
+
+  GestureDetector avatar() {
+    return GestureDetector(
+      onTap: showProfile,
+      child: CircleAvatar(
+        backgroundImage: NetworkImage(
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuAqi5s1FOI-T3qoE_2HD1avj69-gvq2cvIw&s',
+        ),
+      ),
+    );
+  }
+
+  void showProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileView()),
     );
   }
 

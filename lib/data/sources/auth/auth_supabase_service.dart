@@ -1,21 +1,22 @@
 import 'package:dartz/dartz.dart';
+import 'package:meme_cloud/common/supabase.dart';
 import 'package:meme_cloud/data/models/auth/create_user_request.dart';
 import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
-import 'package:meme_cloud/service_locator.dart';
+import 'package:meme_cloud/core/service_locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSupabaseService {
-  final SupabaseClient _supabaseClient = serviceLocator<SupabaseClient>();
+
 
   AuthSupabaseService();
 
   Future<User?> getCurrentUser() async {
-    return _supabaseClient.auth.currentUser;
+    return supabase.auth.currentUser;
   }
 
   Future<Either> signInWithEmail(SignInRequest signInReq) async {
     try {
-      final response = await _supabaseClient.auth.signInWithPassword(
+      final response = await supabase.auth.signInWithPassword(
         email: signInReq.email,
         password: signInReq.password,
       );
@@ -31,12 +32,10 @@ class AuthSupabaseService {
 
   Future<Either> signUpWithEmail(CreateUserRequest createUserReq) async {
     try {
-      final response = await _supabaseClient.auth.signUp(
+      final response = await supabase.auth.signUp(
         email: createUserReq.email,
         password: createUserReq.password,
-        data: {
-          'display_name': createUserReq.fullName,
-        },
+        data: {'display_name': createUserReq.fullName},
       );
       if (response.user != null) {
         return Right(response.user);
@@ -49,10 +48,10 @@ class AuthSupabaseService {
   }
 
   Future<void> signOut() async {
-    await _supabaseClient.auth.signOut();
+    await supabase.auth.signOut();
   }
 
   Stream<AuthState> authStateChanges() {
-    return _supabaseClient.auth.onAuthStateChange;
+    return supabase.auth.onAuthStateChange;
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/data/models/song/song_dto.dart';
 import 'package:meme_cloud/domain/repositories/song/song_repository.dart';
-import 'package:meme_cloud/domain/usecases/song/get_song_list.dart';
 import 'package:meme_cloud/presentation/view/play_music/play_music_view.dart';
 import 'package:meme_cloud/core/service_locator.dart';
 import 'package:dartz/dartz.dart' as dartz;

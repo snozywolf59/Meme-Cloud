@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meme_cloud/data/models/auth/sign_in_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_in.dart';
-import 'package:meme_cloud/presentation/view/dashboard.dart';
 import 'package:meme_cloud/core/service_locator.dart';
 import 'package:meme_cloud/presentation/view/auth/sign_up_view.dart';
 

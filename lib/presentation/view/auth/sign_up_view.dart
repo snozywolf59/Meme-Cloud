@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:meme_cloud/data/models/auth/create_user_request.dart';
 import 'package:meme_cloud/domain/usecases/auth/sign_up.dart';
 import 'package:meme_cloud/presentation/view/auth/log_in_view.dart';
-import 'package:meme_cloud/core/service_locator.dart';
+import 'package:meme_cloud/service_locator.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -16,64 +17,59 @@ class _SignUpViewState extends State<SignUpView> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
 
   bool obscurePassword = true;
-  bool obscureConfirmPassword = true;
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
     fullNameController.dispose();
-    confirmPasswordController.dispose();
     super.dispose();
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _handleSignUp() async {
+    if (!isAgree) {
+      _showSnackBar('Vui lòng đồng ý với điều khoản và điều kiện');
+      return;
+    }
+
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
     final fullName = fullNameController.text.trim();
 
-    if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
       _showSnackBar('Vui lòng điền đầy đủ thông tin!');
       return;
     }
 
-
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+    if (!RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(email)) {
       _showSnackBar('Email không hợp lệ!');
       return;
     }
 
-    if (password.length < 6 || confirmPassword.length < 6) {
+    if (password.length < 6) {
       _showSnackBar('Mật khẩu phải có ít nhất 6 ký tự!');
       return;
     }
 
-    if (password != confirmPassword) {
-      _showSnackBar('Mật khẩu không khớp!');
-      return;
-    }
-
     final result = await serviceLocator<SignUpUseCase>().call(
-      CreateUserRequest(
-        email: email,
-        password: password,
-        fullName: fullName,
-      ),
+      CreateUserRequest(email: email, password: password, fullName: fullName),
     );
 
     result.fold(
-          (l) {
+      (l) {
         _showSnackBar('Đăng ký không thành công! Lỗi $l');
       },
-          (r) {
+      (r) {
         _showSnackBar('Đăng ký thành công!');
         Navigator.pushReplacement(
           context,
@@ -86,133 +82,257 @@ class _SignUpViewState extends State<SignUpView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+
+              // Create Account header
+              const Center(
+                child: Text(
                   'Đăng Ký',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 30),
+              // const Center(
+              //   child: Text(
+              //     'Fill your information below or register\nwith your social account.',
+              //     textAlign: TextAlign.center,
+              //     style: TextStyle(fontSize: 14, color: Colors.black54),
+              //   ),
+              // ),
+              // const SizedBox(height: 40),
 
-                TextField(
-                  controller: fullNameController,
-                  decoration: const InputDecoration(labelText: 'Họ và tên'),
-                ),
-                const SizedBox(height: 10),
-
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                ),
-                const SizedBox(height: 10),
-
-                TextField(
-                  controller: passwordController,
-                  obscureText: obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Mật khẩu',
-                    suffixIcon: IconButton(
-                      icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () {
-                        setState(() {
-                          obscurePassword = !obscurePassword;
-                        });
-                      },
-                    ),
+              // Name Field
+              const Text(
+                'Họ và tên',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: fullNameController,
+                decoration: InputDecoration(
+                  hintText: 'Hùng Sinh',
+                  hintStyle: const TextStyle(color: Colors.black38),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
                   ),
                 ),
-                const SizedBox(height: 10),
+              ),
+              const SizedBox(height: 20),
 
-                TextField(
-                  controller: confirmPasswordController,
-                  obscureText: obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Nhập lại mật khẩu',
-                    suffixIcon: IconButton(
-                      icon: Icon(obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () {
-                        setState(() {
-                          obscureConfirmPassword = !obscureConfirmPassword;
-                        });
-                      },
-                    ),
+              // Email Field
+              const Text(
+                'Email',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: 'example@gmail.com',
+                  hintStyle: const TextStyle(color: Colors.black38),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
                   ),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    Checkbox(
+              // Password Field
+              const Text(
+                'Mật Khẩu',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: passwordController,
+                obscureText: obscurePassword,
+                decoration: InputDecoration(
+                  hintText: '••••••••••••••',
+                  hintStyle: const TextStyle(color: Colors.black38),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Terms and Conditions
+              Row(
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Checkbox(
                       value: isAgree,
+                      activeColor: const Color(0xFF8465FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       onChanged: (value) {
                         setState(() {
                           isAgree = value ?? false;
                         });
                       },
                     ),
-                    Expanded(
-                      child: RichText(
-                        text: const TextSpan(
-                          text: 'Đồng ý với ',
-                          style: TextStyle(color: Colors.black),
-                          children: [
-                            TextSpan(
-                              text: 'Điều khoản & Chính sách',
-                              style: TextStyle(
-                                color: Colors.deepPurple,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ],
-                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('Chấp Nhận ', style: TextStyle(fontSize: 14)),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to Terms & Conditions
+                    },
+                    child: const Text(
+                      'Điều Khoản & Điều Kiện',
+                      style: TextStyle(
+                        color: Color(0xFF8465FF),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _handleSignUp,
-                    child: const Text('Đăng ký', style: TextStyle(color: Colors.white)),
+              // Sign Up Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _handleSignUp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8465FF),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Đăng Ký',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
+              ),
+              const SizedBox(height: 32),
 
-                const SizedBox(height: 20),
+              // Divider
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey[300])),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Hoặc đăng ký bằng',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey[300])),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-                Row(
+              // Social login options
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  socialIcon('assets/icons/icons8-google.svg'),
+                  const SizedBox(width: 30),
+                  socialIcon('assets/icons/icons8-facebook.svg'),
+                ],
+              ),
+              const SizedBox(height: 26),
+
+              // Sign In link
+              Center(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Đã có tài khoản? '),
+                    Text(
+                      'Bạn đã có tài khoản? ',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
                     GestureDetector(
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const LogInView()),
+                          MaterialPageRoute(
+                            builder: (context) => const LogInView(),
+                          ),
                         );
                       },
                       child: const Text(
-                        'Đăng nhập',
+                        'Đăng Nhập',
                         style: TextStyle(
-                          color: Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
+                          color: Color(0xFF8465FF),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget socialIcon(String assetPath, {Color? iconColor}) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade200),
+        color: Colors.white,
+      ),
+      child: SvgPicture.asset(
+        assetPath,
+        color: iconColor,
+        fit: BoxFit.scaleDown,
       ),
     );
   }

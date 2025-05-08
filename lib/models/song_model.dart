@@ -4,7 +4,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:memecloud/apis/apikit.dart';
 import 'package:memecloud/apis/supabase/main.dart';
 import 'package:memecloud/apis/zingmp3/endpoints.dart';
-import 'package:memecloud/blocs/liked_songs/liked_songs_cubit.dart';
+import 'package:memecloud/blocs/liked_songs/liked_songs_stream.dart';
 import 'package:memecloud/core/getit.dart';
 import 'package:memecloud/models/artist_model.dart';
 
@@ -80,15 +80,21 @@ class SongModel {
     }
   }
 
-  static List<SongModel> fromListJson<T>(List list) {
-    return list.map((json) => SongModel.fromJson<T>(json)).toList();
+  static Future<List<SongModel>> fromListJson<T>(List list) async {
+    final tmp = list.map((json) => SongModel.fromJson<T>(json)).toList();
+    try {
+      final songIds = await getIt<ApiKit>().filterNonVipSongs(tmp.map((e) => e.id).toList());
+      return tmp.where((e) => songIds.contains(e.id)).toList();
+    } catch(_) {
+      return tmp;
+    }
   }
 
   bool setIsLiked(bool newValue, {bool sync = true}) {
     if (sync) {
       unawaited(getIt<ApiKit>().setIsLiked(id, newValue));
     }
-    getIt<LikedSongsCubit>().setIsLiked(this, newValue);
+    getIt<LikedSongsStream>().setIsLiked(this, newValue);
     return isLiked = newValue;
   }
 

@@ -1,27 +1,21 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:memecloud/components/default_future_builder.dart';
-import 'package:memecloud/components/grad_background.dart';
-import 'package:memecloud/components/song/song_lyric.dart';
 import 'package:memecloud/core/getit.dart';
 import 'package:memecloud/apis/apikit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:memecloud/models/song_model.dart';
+import 'package:memecloud/components/song/song_lyric.dart';
+import 'package:memecloud/components/song/like_button.dart';
 import 'package:memecloud/components/song/song_controller.dart';
+import 'package:memecloud/components/miscs/grad_background.dart';
 import 'package:memecloud/blocs/song_player/song_player_state.dart';
 import 'package:memecloud/blocs/song_player/song_player_cubit.dart';
-import 'package:memecloud/utils/common.dart';
+import 'package:memecloud/components/miscs/default_future_builder.dart';
 
-class SongPage extends StatefulWidget {
-  const SongPage({super.key});
-
-  @override
-  State<SongPage> createState() => _SongPageState();
-}
-
-class _SongPageState extends State<SongPage> {
+class SongPage extends StatelessWidget {
   final playerCubit = getIt<SongPlayerCubit>();
+
+  SongPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,56 +26,42 @@ class _SongPageState extends State<SongPage> {
           return SizedBox();
         }
 
-        return getIt<ApiKit>().paletteColorsWidgetBuider(
-          state.currentSong.thumbnailUrl,
-          (paletteColors) {
-            late final Color bgColor, subBgColor;
-            if (AdaptiveTheme.of(context).mode.isDark) {
-              bgColor = adjustColor(paletteColors.first, l: 0.3, s: 0.3);
-              subBgColor = adjustColor(paletteColors.last, l: 0.08, s: 0.4);
-            } else {
-              bgColor = adjustColor(paletteColors[0], l: 0.5, s: 0.3);
-              subBgColor = adjustColor(paletteColors.last, l: 0.15, s: 0.4);
-            }
-
-            return GradBackground(
-              color: bgColor,
-              subColor: subBgColor,
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  appBarTheme: const AppBarTheme(foregroundColor: Colors.white),
-                  textTheme: Theme.of(context).textTheme.apply(
-                    bodyColor: Colors.white,
-                    displayColor: Colors.white,
-                  ),
-                ),
-                child: Scaffold(
-                  appBar: _appBar(context),
-                  backgroundColor: Colors.transparent,
-                  body: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            SizedBox(height: 46),
-                            _songCover(context, state.currentSong),
-                            SizedBox(height: 30),
-                            _songDetails(state.currentSong),
-                            SizedBox(height: 20),
-                            SongControllerView(song: state.currentSong),
-                            SizedBox(height: 50),
-                            _songLyric(state.currentSong),
-                          ],
-                        ),
-                      ),
+        return GradBackground2(
+          imageUrl: state.currentSong.thumbnailUrl,
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              appBarTheme: const AppBarTheme(foregroundColor: Colors.white),
+              textTheme: Theme.of(context).textTheme.apply(
+                bodyColor: Colors.white,
+                displayColor: Colors.white,
+              ),
+            ),
+            child: Scaffold(
+              appBar: _appBar(context),
+              backgroundColor: Colors.transparent,
+              body: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 46),
+                        _songCover(context, state.currentSong),
+                        SizedBox(height: 30),
+                        _songDetails(state.currentSong),
+                        SizedBox(height: 20),
+                        SongControllerView(song: state.currentSong),
+                        SizedBox(height: 50),
+                        _songLyric(state.currentSong),
+                        SizedBox(height: 10),
+                      ],
                     ),
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -114,7 +94,7 @@ class _SongPageState extends State<SongPage> {
                         'Lời bài hát',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w600
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -127,7 +107,7 @@ class _SongPageState extends State<SongPage> {
                   ],
                 ),
               ),
-              Expanded(child: SongLyric(lyric: data!, largeText: false,)),
+              Expanded(child: SongLyricWidget(lyric: data!, largeText: false)),
             ],
           );
         },
@@ -163,18 +143,7 @@ class _SongPageState extends State<SongPage> {
           ),
         ),
         SizedBox(width: 20),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              song.setIsLiked(!song.isLiked!);
-            });
-          },
-          icon: Icon(
-            song.isLiked! ? Icons.favorite : Icons.favorite_outline_outlined,
-            size: 30,
-            color: song.isLiked! ? Colors.red.shade400 : Colors.white,
-          ),
-        ),
+        SongLikeButton(song: song),
       ],
     );
   }

@@ -16,7 +16,7 @@ import 'package:memecloud/models/user_model.dart';
 import 'package:memecloud/apis/zingmp3/endpoints.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:memecloud/models/search_result_model.dart';
-import 'package:memecloud/components/default_future_builder.dart';
+import 'package:memecloud/components/miscs/default_future_builder.dart';
 
 class ApiKit {
   final dio = getIt<Dio>();
@@ -62,6 +62,13 @@ class ApiKit {
     }
 
     return remoteResp;
+  }
+
+  Future<void> updateCached(String api, Map data) {
+    return Future.wait([
+      storage.updateCached(api, data),
+      client.from('api_cache').upsert({'api': api, 'data': data}),
+    ]);
   }
 
   Future<Output> _getOrFetch<DataType, Output>(
@@ -149,6 +156,13 @@ class ApiKit {
   Future<List<SongModel>> getLikedSongsList() =>
       supabase.songs.getLikedSongsList();
 
+  Future<bool> isBlacklisted(String songId) =>
+      supabase.songs.isBlacklisted(songId);
+  Future<void> toggleBlacklist(String songId) =>
+      supabase.songs.toggleBlacklist(songId);
+  Future<List<SongModel>> getBlacklistedSongs() =>
+      supabase.songs.getBlacklistSongs();
+
   /* ----------------------
   |    VIP SONGS FILTER   |
   ---------------------- */
@@ -168,7 +182,7 @@ class ApiKit {
     ]);
   }
 
-  Future<List<String>> filterNonVipSongs(List<String> songsIds) async {
+  Future<List<String>> filterNonVipSongs(Iterable<String> songsIds) async {
     try {
       return await supabase.songs.filterNonVipSongs(songsIds);
     } on ConnectionLoss {
@@ -183,7 +197,7 @@ class ApiKit {
 
   Future<PlaylistModel?> getPlaylistInfo(String playlistId) async {
     final String api = '/infoplaylist?id=$playlistId';
-    return await _getOrFetch<Map<String, dynamic>?, PlaylistModel?>(
+    return await _getOrFetch<Map<String, dynamic>?, Future<PlaylistModel>?>(
       api,
       fetchFunc: () => zingMp3.fetchPlaylistInfo(playlistId),
       cacheEncode: (data) => ignoreNullValuesOfMap({'data': data}),
@@ -226,6 +240,44 @@ class ApiKit {
   void saveSearch(String query) => storage.saveSearch(query);
   void removeSearch(String query) => storage.saveSearch(query, negate: true);
   List<String> getRecentSearches() => storage.getRecentSearches();
+
+  Future<List<SongModel>?> searchSongs(
+    String keyword, {
+    required int page,
+  }) async {
+    final jsons = await zingMp3.searchSongs(keyword, page: page);
+    return jsons == null ? null : SongModel.fromListJson<ZingMp3Api>(jsons);
+  }
+
+  Future<List<PlaylistModel>?> searchPlaylists(
+    String keyword, {
+    required int page,
+  }) async {
+    final jsons = await zingMp3.searchPlaylists(keyword, page: page);
+    return jsons == null ? null : PlaylistModel.fromListJson<ZingMp3Api>(jsons);
+  }
+
+  Future<List<ArtistModel>?> searchArtists(
+    String keyword, {
+    required int page,
+  }) async {
+    final jsons = await zingMp3.searchArtists(keyword, page: page);
+    return jsons == null ? null : ArtistModel.fromListJson<ZingMp3Api>(jsons);
+  }
+
+  Future<SearchResultModel> searchMulti(String keyword) async {
+    keyword = normalizeSearchQueryString(keyword);
+
+    String api = '/search?keyword=$keyword';
+    final int lazyTime = 14 * 24 * 60 * 60; // 14 days
+
+    return await _getOrFetch<Map, Future<SearchResultModel>>(
+      api,
+      lazyTime: lazyTime,
+      fetchFunc: () => zingMp3.searchMulti(keyword),
+      outputFixer: (data) => SearchResultModel.fromJson(data),
+    );
+  }
 
   /* ---------------------
   |    SUPABASE CACHE    |
@@ -309,13 +361,6 @@ class ApiKit {
     return SongLyricsModel.parse(file);
   }
 
-  Future<void> updateCached(String api, Map data) {
-    return Future.wait([
-      storage.updateCached(api, data),
-      client.from('api_cache').upsert({'api': api, 'data': data}),
-    ]);
-  }
-
   Future<List<Map<String, dynamic>>> getSongsForHome() async {
     final String api = '/home';
     final int lazyTime = 12 * 60 * 60; // 12 hours
@@ -331,20 +376,6 @@ class ApiKit {
           (json) => List.castFrom<dynamic, Map<String, dynamic>>(json['items']),
       cacheEncode: (data) => {'items': data},
       outputFixer: (data) => _getSongsForHomeOutputFixer(data),
-    );
-  }
-
-  Future<SearchResultModel> searchMulti(String keyword) async {
-    keyword = normalizeSearchQueryString(keyword);
-
-    String api = '/search?keyword=$keyword';
-    final int lazyTime = 14 * 24 * 60 * 60; // 14 days
-
-    return await _getOrFetch<Map, SearchResultModel>(
-      api,
-      lazyTime: lazyTime,
-      fetchFunc: () => zingMp3.searchMulti(keyword),
-      outputFixer: (data) => SearchResultModel.fromJson(data),
     );
   }
 

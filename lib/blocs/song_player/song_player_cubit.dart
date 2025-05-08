@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:memecloud/apis/connectivity.dart';
 import 'package:memecloud/core/getit.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:memecloud/apis/apikit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:memecloud/apis/connectivity.dart';
 import 'package:memecloud/models/song_model.dart';
 import 'package:memecloud/blocs/song_player/song_player_state.dart';
 
@@ -48,12 +48,7 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
   }
 
   Future<String?> _getSongPath(SongModel song) async {
-    try {
-      await song.loadIsLiked();
-      await getIt<ApiKit>().saveSongInfo(song);
-    } on ConnectionLoss {
-      song.setIsLiked(false, sync: false);
-    }
+    unawaited(getIt<ApiKit>().saveSongInfo(song));
     try {
       return await getIt<ApiKit>().getSongPath(song.id);
     } on ConnectionLoss {
@@ -73,9 +68,9 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
 
       final songPath = await _getSongPath(song);
       if (songPath == null) {
-        return !context.mounted || onSongFailedToLoad(context, 'songPath is null');
+        return !context.mounted ||
+            onSongFailedToLoad(context, 'songPath is null');
       } else {
-        // TODO: put this line somewhere else!
         debugPrint('Found song path: $songPath');
         currentSongList = [song];
         if (songList == null) {
@@ -123,7 +118,6 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
       if (state is! SongPlayerLoaded) return Future.value();
       final songPath = await _getSongPath(song);
       if (songPath != null) {
-        getIt<ApiKit>().saveSongInfo(song);
         currentSongList.add(song);
         await audioPlayer.addAudioSource(
           AudioSource.file(songPath, tag: song.mediaItem),
@@ -155,6 +149,7 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
     }
     if (await _loadSong(context, song, songList: songList)) {
       playOrPause();
+      // getIt<SupabaseApi>().songs.incrementView(song.id);
       return true;
     }
     return false;
@@ -179,5 +174,6 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
   Future<void> seekToNext() => audioPlayer.seekToNext();
 
   Future<void> seekToPrevious() => audioPlayer.seekToPrevious();
-  Future<void> toggleShuffleMode() => audioPlayer.setShuffleModeEnabled(!shuffleMode);
+  Future<void> toggleShuffleMode() =>
+      audioPlayer.setShuffleModeEnabled(!shuffleMode);
 }

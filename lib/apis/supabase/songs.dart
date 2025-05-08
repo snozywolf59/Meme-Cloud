@@ -115,8 +115,28 @@ class SupabaseSongsApi {
       return songsList;
     } catch (e, stackTrace) {
       _connectivity.reportCrash(e, StackTrace.current);
+      log("Failed to get liked songs: $e", stackTrace: stackTrace, level: 1000);
+      rethrow;
+    }
+  }
+
+  ///Start blacklist song
+  Future<bool> isBlacklisted(String songId) async {
+    try {
+      _connectivity.ensure();
+      final userId = _client.auth.currentUser!.id;
+      final existing =
+          await _client
+              .from('blacklist')
+              .select('song_id')
+              .eq('user_id', userId)
+              .eq('song_id', songId)
+              .maybeSingle();
+      return existing != null;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, StackTrace.current);
       log(
-        "Failed to get liked songs: $e",
+        "Failed to get blacklist state: $e",
         stackTrace: stackTrace,
         level: 1000,
       );
@@ -124,18 +144,93 @@ class SupabaseSongsApi {
     }
   }
 
-  Future<List<String>> filterNonVipSongs(List<String> songsIds) async {
+  Future<void> toggleBlacklist(String songId) async {
+    try {
+      _connectivity.ensure();
+      final userId = _client.auth.currentUser!.id;
+
+      bool alreadyBlacklisted = await isBlacklisted(songId);
+
+      if (alreadyBlacklisted) {
+        await _client
+            .from('blacklist')
+            .delete()
+            .eq('user_id', userId)
+            .eq('song_id', songId);
+      } else {
+        await _client.from('blacklist').insert({
+          'user_id': userId,
+          'song_id': songId,
+        });
+      }
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, stackTrace);
+      log(
+        "Failed to toggle blacklist for song: $e",
+        stackTrace: stackTrace,
+        level: 1000,
+      );
+      rethrow;
+    }
+  }
+
+  Future<List<SongModel>> getBlacklistSongs() async {
+    try {
+      _connectivity.ensure();
+      final userId = _client.auth.currentUser!.id;
+
+      final response = await _client
+          .from('blacklist')
+          .select('song(*)')
+          .eq('user_id', userId);
+
+      final songsList =
+          response
+              .map((item) => SongModel.fromJson<SupabaseApi>(item))
+              .toList();
+      return songsList;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, StackTrace.current);
+      log(
+        "Failed to get blacklisted songs: $e",
+        stackTrace: stackTrace,
+        level: 1000,
+      );
+      rethrow;
+    }
+  }
+
+  ///End blacklist song
+
+  ///begin increment view
+  Future<void> incrementView(String songId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+
+  if (userId == null) return;
+
+  final response = await Supabase.instance.client
+      .rpc('increment_view', params: {
+        'listened_song_id': songId,
+        'listened_user_id': userId,
+      });
+
+  if (response.error != null) {
+    log('Lỗi tăng view: ${response.error!.message}');
+  }
+  }
+
+  ///end increment view
+
+  Future<List<String>> filterNonVipSongs(Iterable<String> songsIds) async {
     try {
       _connectivity.ensure();
       final resp = await _client
           .from('vip_songs')
           .select('song_id')
-          .inFilter('song_id', songsIds);
+          .inFilter('song_id', songsIds.toList());
 
       final vipSongIds = resp.map((e) => e['song_id']).toSet();
-      final filteredList =
-          songsIds.where((id) => !vipSongIds.contains(id)).toList();
-      return filteredList;
+      return songsIds.where((id) => !vipSongIds.contains(id)).toList();
     } catch (e, stackTrace) {
       _connectivity.reportCrash(e, StackTrace.current);
       log('Failed to fetch vip songs: $e', stackTrace: stackTrace, level: 1000);

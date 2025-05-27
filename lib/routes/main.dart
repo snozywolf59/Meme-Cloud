@@ -1,17 +1,18 @@
 import 'package:go_router/go_router.dart';
 import 'package:memecloud/core/getit.dart';
 import 'package:memecloud/apis/apikit.dart';
+import 'package:memecloud/models/playlist_model.dart';
 import 'package:memecloud/pages/404/404.dart';
-import 'package:memecloud/pages/artist/artist_page.dart';
-import 'package:memecloud/pages/playlist/playlist_page.dart';
 import 'package:memecloud/pages/song/song_page.dart';
 import 'package:memecloud/pages/auth/signin_page.dart';
 import 'package:memecloud/pages/auth/signup_page.dart';
+import 'package:memecloud/pages/artist/artist_page.dart';
 import 'package:memecloud/components/song/song_lyric.dart';
 import 'package:memecloud/pages/profile/profile_page.dart';
+import 'package:memecloud/pages/playlist/playlist_page.dart';
 import 'package:memecloud/pages/dashboard/dashboard_page.dart';
 import 'package:memecloud/components/miscs/grad_background.dart';
-import 'package:memecloud/utils/transition.dart';
+import 'package:memecloud/routes/transitions.dart';
 
 GoRouter? router;
 
@@ -41,23 +42,32 @@ GoRouter getRouter() {
       GoRoute(
         path: '/playlist_page',
         pageBuilder: (context, state) {
-          final playlistId = state.extra as String;
-          return CustomTransitionPage(
-            key: state.pageKey,
-            child: PlaylistPage(playlistId: playlistId),
-            transitionsBuilder: PageTransitions.slideTransition,
-          );
+          if (state.extra is String) {
+            final playlistId = state.extra as String;
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: PlaylistPage(playlistId: playlistId),
+              transitionsBuilder: PageTransitions.fadeTransition,
+            );
+          }
+          else {
+            final playlist = state.extra as PlaylistModel;
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: PlaylistPage(playlist: playlist),
+              transitionsBuilder: PageTransitions.fadeTransition,
+            );
+          }
         },
       ),
       GoRoute(
         path: '/artist_page',
         pageBuilder: (context, state) {
           final artistAlias = state.extra as String;
-
           return CustomTransitionPage(
             key: state.pageKey,
             child: ArtistPage(artistAlias: artistAlias),
-            transitionsBuilder: PageTransitions.slideTransition,
+            transitionsBuilder: PageTransitions.fadeTransition,
           );
         },
       ),

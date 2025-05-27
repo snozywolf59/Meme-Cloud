@@ -1,19 +1,17 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:memecloud/core/getit.dart';
-import 'package:memecloud/apis/connectivity.dart';
 import 'package:memecloud/models/song_model.dart';
 import 'package:memecloud/blocs/liked_songs/liked_songs_stream.dart';
 
 class SongLikeButton extends StatefulWidget {
   final SongModel song;
-  final Color dftColor;
+  final double? iconSize;
   final bool defaultIsLiked;
 
   const SongLikeButton({
     super.key,
     required this.song,
-    this.dftColor = Colors.white,
+    this.iconSize,
     this.defaultIsLiked = false,
   });
 
@@ -22,22 +20,6 @@ class SongLikeButton extends StatefulWidget {
 }
 
 class _SongLikeButtonState extends State<SongLikeButton> {
-  @override
-  void initState() {
-    super.initState();
-    if (widget.song.isLiked == null) {
-      widget.song.setIsLiked(widget.defaultIsLiked, sync: false);
-      unawaited(() async {
-        try {
-          await widget.song.loadIsLiked();
-          setState(() {});
-        } on ConnectionLoss {
-          return;
-        }
-      }());
-    }
-  }
-
   void _syncLike(AsyncSnapshot<SongLikeEvent> snapshot) {
     final event = snapshot.data;
     SongModel? song;
@@ -57,15 +39,16 @@ class _SongLikeButtonState extends State<SongLikeButton> {
       builder: (context, snapshot) {
         _syncLike(snapshot);
         return IconButton(
+          iconSize: widget.iconSize,
           icon:
               widget.song.isLiked == true
                   ? Icon(Icons.favorite_rounded, color: Colors.red.shade400)
                   : Icon(
                     Icons.favorite_outline_rounded,
-                    color: widget.dftColor,
+                    color: Colors.white,
                   ),
           onPressed: () {
-            widget.song.setIsLiked(widget.song.isLiked != true);
+            widget.song.isLiked = widget.song.isLiked != true;
           },
         );
       },

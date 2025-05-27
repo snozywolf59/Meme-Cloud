@@ -33,7 +33,7 @@ class SongControllerView extends StatelessWidget {
           children: [
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.blueAccent,
+                activeTrackColor: Colors.white,
                 inactiveTrackColor: Colors.grey.shade700,
                 trackHeight: 4.0,
 
@@ -67,15 +67,18 @@ class SongControllerView extends StatelessWidget {
   }
 
   Widget _songControllerButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _shuffleButton(),
-        _seekPreviousButton(),
-        _playOrPauseButton(),
-        _seekNextButton(),
-        _speedButton(),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _shuffleButton(),
+          _seekPreviousButton(),
+          _playOrPauseButton(),
+          _seekNextButton(),
+          _speedButton(),
+        ],
+      ),
     );
   }
 
@@ -91,12 +94,12 @@ class SongControllerView extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.greenAccent.shade700,
+        color: Colors.green.shade500,
       ),
       child: PlayOrPauseButton(
         song: song,
         iconSize: 30,
-        padding: const EdgeInsets.all(18.0)
+        padding: const EdgeInsets.all(16.0)
       )
     );
   }
@@ -121,7 +124,7 @@ class SongControllerView extends StatelessWidget {
         }
         return IconButton(
           onPressed: () async => await playerCubit.toggleShuffleMode(),
-          iconSize: 35,
+          iconSize: 25,
           icon: Icon(Icons.shuffle_rounded, color: shuffleIconColor),
         );
       },
@@ -138,7 +141,7 @@ class SongControllerView extends StatelessWidget {
           child: Center(
             child: GestureDetector(
               onTap: () async => await playerCubit.toggleSongSpeed(),
-              child: Text('${currentSpeed}x', style: TextStyle(fontSize: 18)),
+              child: Text('${currentSpeed}x', style: TextStyle(fontSize: 16)),
             ),
           ),
         );

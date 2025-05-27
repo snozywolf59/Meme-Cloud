@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:mime/mime.dart';
 import 'package:dartz/dartz.dart';
 import 'package:memecloud/core/getit.dart';
-import 'package:memecloud/apis/connectivity.dart';
+import 'package:memecloud/apis/others/connectivity.dart';
 import 'package:memecloud/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +12,7 @@ class SupabaseProfileApi {
   SupabaseProfileApi(this._client);
   final _connectivity = getIt<ConnectivityStatus>();
 
+  UserModel? myProfile;
   final String _bucketName = 'images';
   final String _avatarFolder = 'avatar';
 

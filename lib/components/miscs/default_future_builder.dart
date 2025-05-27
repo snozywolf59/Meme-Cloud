@@ -1,10 +1,11 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:memecloud/apis/connectivity.dart';
+import 'package:memecloud/apis/others/connectivity.dart';
 
 Widget defaultFutureBuilder<T>({
   required Future<T> future,
+  Widget onWaiting = const Center(child: CircularProgressIndicator()),
   required Widget Function(BuildContext context, T data) onData,
   Widget Function(BuildContext context)? onNull,
   Widget Function(BuildContext context, dynamic error)? onError,
@@ -15,7 +16,7 @@ Widget defaultFutureBuilder<T>({
     initialData: initialData,
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
+        return onWaiting;
       }
 
       onError ??= (BuildContext context, error) {

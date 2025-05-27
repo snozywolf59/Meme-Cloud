@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'dart:developer';
-
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:memecloud/core/getit.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:memecloud/apis/apikit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:memecloud/apis/connectivity.dart';
 import 'package:memecloud/models/song_model.dart';
+import 'package:memecloud/apis/others/connectivity.dart';
 import 'package:memecloud/blocs/song_player/song_player_state.dart';
 
 class SongPlayerCubit extends Cubit<SongPlayerState> {
   AudioPlayer audioPlayer = AudioPlayer();
   List<SongModel> currentSongList = [];
   double currentSongSpeed = 1.0;
+
   late StreamSubscription _indexSub;
 
   SongPlayerCubit() : super(SongPlayerInitial()) {
@@ -21,7 +22,11 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
       if (index == null) {
         emit(SongPlayerInitial());
       } else {
-        emit(SongPlayerLoaded(currentSongList[index]));
+        final newState = SongPlayerLoaded(currentSongList[index]);
+        if (newState != state) {
+          unawaited(getIt<ApiKit>().newSongStream(newState.currentSong));
+          emit(newState);
+        }
       }
     });
   }
@@ -47,14 +52,21 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
     return false;
   }
 
-  Future<String?> _getSongPath(SongModel song) async {
+  Future<AudioSource?> _getAudioSource(SongModel song) async {
     unawaited(getIt<ApiKit>().saveSongInfo(song));
     try {
-      return await getIt<ApiKit>().getSongPath(song.id);
+      final uri = await getIt<ApiKit>().getSongUri(song.id);
+      if (uri.scheme == 'file') {
+        return AudioSource.uri(uri, tag: song.mediaItem);
+      }
+      return LockCachingAudioSource(uri, tag: song.mediaItem);
     } on ConnectionLoss {
+      log('Connection loss while trying to get audio source. Returning null');
       return null;
     }
   }
+
+  CancelableOperation<void>? songsPopulateTask;
 
   Future<bool> _loadSong(
     BuildContext context,
@@ -66,36 +78,38 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
       emit(SongPlayerLoading(song));
       await audioPlayer.stop();
 
-      final songPath = await _getSongPath(song);
-      if (songPath == null) {
+      final audioSource = await _getAudioSource(song);
+      if (audioSource == null) {
         return !context.mounted ||
-            onSongFailedToLoad(context, 'songPath is null');
+            onSongFailedToLoad(context, 'audioSource is null');
       } else {
-        debugPrint('Found song path: $songPath');
         currentSongList = [song];
         if (songList == null) {
-          await audioPlayer.setAudioSource(
-            AudioSource.file(songPath, tag: song.mediaItem),
-          );
-          await audioPlayer.setLoopMode(LoopMode.one);
+          await audioPlayer.setAudioSource(audioSource);
+          await audioPlayer.setLoopMode(LoopMode.off);
         } else {
-          await audioPlayer.setAudioSources([
-            AudioSource.file(songPath, tag: song.mediaItem),
-          ]);
+          await audioPlayer.setAudioSources([audioSource]);
           await audioPlayer.setLoopMode(LoopMode.all);
 
-          unawaited(
-            lazySongPopulate(song, songList).catchError((e, stackTrace) {
+          int songIdx = songList.indexOf(song);
+          final remainingSongs = [
+            ...songList.sublist(songIdx + 1),
+            ...songList.sublist(0, songIdx),
+          ];
+
+          lazySongPopulateRunning = true;
+          songsPopulateTask = CancelableOperation.fromFuture(
+            lazySongPopulate(remainingSongs).catchError((e, stackTrace) {
               log(
                 'Failed to populate songs: $e',
                 stackTrace: stackTrace,
                 level: 1000,
               );
             }),
+            onCancel: () => lazySongPopulateRunning = false,
           );
         }
         audioPlayer.setSpeed(currentSongSpeed = 1.0);
-        await toggleShuffleMode();
         return true;
       }
     } catch (e, stackTrace) {
@@ -105,23 +119,18 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
     }
   }
 
-  Future<void> lazySongPopulate(
-    SongModel song,
-    List<SongModel> songList,
-  ) async {
-    int initialSongIdx = songList.indexOf(song);
+  late bool lazySongPopulateRunning;
 
-    for (song in [
-      ...songList.sublist(initialSongIdx + 1),
-      ...songList.sublist(0, initialSongIdx),
-    ]) {
-      if (state is! SongPlayerLoaded) return Future.value();
-      final songPath = await _getSongPath(song);
-      if (songPath != null) {
+  Future<void> lazySongPopulate(List<SongModel> songList) async {
+    for (SongModel song in songList) {
+      if (!lazySongPopulateRunning) break;
+      final audioSource = await _getAudioSource(song);
+      if (audioSource != null) {
         currentSongList.add(song);
-        await audioPlayer.addAudioSource(
-          AudioSource.file(songPath, tag: song.mediaItem),
-        );
+        await audioPlayer.addAudioSource(audioSource);
+      }
+      if (currentSongList.length >= 5) {
+        await Future.delayed(Duration(seconds: 10));
       }
     }
   }
@@ -132,32 +141,28 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
     } else {
       audioPlayer.play();
     }
-    emit(state);
   }
 
-  /// Load a song and play. \
-  /// If the player is loading another song, return `true`. \
-  /// Otherwise, return `true` if the song can be played \
-  /// (i.e. `isNonVipSong(song) == true`).
-  Future<bool> loadAndPlay(
+  /// Load a song and play.
+  Future<void> loadAndPlay(
     BuildContext context,
     SongModel song, {
     List<SongModel>? songList,
   }) async {
-    if (state is SongPlayerLoading) {
-      return true;
+    if (state is SongPlayerLoading) return;
+    if (songsPopulateTask?.isCompleted == false) {
+      await songsPopulateTask!.cancel();
     }
-    if (await _loadSong(context, song, songList: songList)) {
+
+    if (context.mounted && await _loadSong(context, song, songList: songList)) {
       playOrPause();
-      // getIt<SupabaseApi>().songs.incrementView(song.id);
-      return true;
     }
-    return false;
   }
 
   bool get isPlaying => audioPlayer.playing;
 
   Future<void> seekTo(Duration position) async {
+    if (state is! SongPlayerLoaded) return;
     await audioPlayer.seek(position);
     emit(state);
   }
@@ -171,9 +176,23 @@ class SongPlayerCubit extends Cubit<SongPlayerState> {
   }
 
   bool get shuffleMode => audioPlayer.shuffleModeEnabled;
-  Future<void> seekToNext() => audioPlayer.seekToNext();
 
-  Future<void> seekToPrevious() => audioPlayer.seekToPrevious();
+  Future<void> seekToNext() async {
+    if (state is! SongPlayerLoaded) return;
+    await audioPlayer.seekToNext();
+    if (audioPlayer.currentIndex == null) {
+      return;
+    }
+  }
+
+  Future<void> seekToPrevious() async {
+    if (state is! SongPlayerLoaded) return;
+    await audioPlayer.seekToPrevious();
+    if (audioPlayer.currentIndex == null) {
+      return;
+    }
+  }
+
   Future<void> toggleShuffleMode() =>
       audioPlayer.setShuffleModeEnabled(!shuffleMode);
 }

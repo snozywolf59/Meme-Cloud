@@ -1,8 +1,10 @@
-import 'package:memecloud/apis/supabase/main.dart';
-import 'package:memecloud/apis/zingmp3/endpoints.dart';
 import 'package:memecloud/utils/common.dart';
+import 'package:memecloud/apis/supabase/main.dart';
+import 'package:memecloud/models/music_model.dart';
+import 'package:memecloud/models/section_model.dart';
+import 'package:memecloud/apis/zingmp3/endpoints.dart';
 
-class ArtistModel {
+class ArtistModel extends MusicModel {
   final String id;
   final String name;
   final String alias;
@@ -12,7 +14,7 @@ class ArtistModel {
   final String? realname;
   final String? biography;
   final String? shortBiography;
-  bool? followed;
+  final List<SectionModel>? sections;
 
   ArtistModel._({
     required this.id,
@@ -23,11 +25,18 @@ class ArtistModel {
     this.realname,
     this.biography,
     this.shortBiography,
-    this.followed,
+    this.sections,
   });
 
-  static ArtistModel fromJson<T>(Map<String, dynamic> json, {bool? followed}) {
+  static ArtistModel fromJson<T>(Map<String, dynamic> json) {
     if (T == ZingMp3Api) {
+      List<SectionModel>? sections;
+      if (json.containsKey('sections')) {
+        sections = SectionModel.fromListJson<T>(
+          List.castFrom<dynamic, Map<String, dynamic>>(json['sections']),
+        );
+      }
+
       return ArtistModel._(
         id: json['id'],
         name: json['name'],
@@ -37,7 +46,7 @@ class ArtistModel {
         realname: json['realname'],
         biography: json['biography'],
         shortBiography: json['sortBiography'],
-        followed: followed,
+        sections: sections,
       );
     } else if (T == SupabaseApi) {
       final art = json['artist'];
@@ -47,35 +56,28 @@ class ArtistModel {
         alias: art['alias'],
         thumbnailUrl: art['thumbnail_url'],
         playlistId: art['playlist_id'],
-        realname: art['realname'],
-        biography: art['bio'],
-        shortBiography: art['short_bio'],
-        followed: followed,
       );
     } else {
       throw UnsupportedError('Unsupported parse json for type $T');
     }
   }
 
-  Map toJson<T>() {
-    if (T == SupabaseApi) {
-      return {
-        'artist': ignoreNullValuesOfMap({
-          'id': id,
-          'name': name,
-          'alias': alias,
-          'thumbnail_url': thumbnailUrl,
-          'playlist_id': playlistId,
-          'realname': realname,
-          'bio': biography,
-          'short_bio': shortBiography,
-        })
-      };
-    } else {
-      throw UnsupportedError(
-        'Unsupported convert ArtistModel to json for type $T',
-      );
-    }
+  @override
+  Map<String, dynamic> toJson({bool only = false}) {
+    return {
+      'artist': ignoreNullValuesOfMap({
+        'id': id,
+        'name': name,
+        'alias': alias,
+        'thumbnail_url': thumbnailUrl,
+        'playlist_id': playlistId,
+        'realname': realname,
+        'bio': biography,
+        'short_bio': shortBiography,
+        if (only == false)
+          'sections': sections?.map((e) => e.toJson()).toList(),
+      }),
+    };
   }
 
   static List<ArtistModel> fromListJson<T>(List list) {

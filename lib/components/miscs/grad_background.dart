@@ -1,21 +1,19 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:memecloud/apis/apikit.dart';
-import 'package:memecloud/core/getit.dart';
 import 'package:memecloud/utils/common.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 
 class MyColorSet {
   static final cyan = Colors.cyan.shade900;
   static final purple = Colors.deepPurple.shade300;
   static final grey = Colors.blueGrey;
   static final redAccent = Colors.redAccent.shade200;
-  static final teal = Colors.teal.shade600;
+  static final teal = const Color.fromRGBO(0, 137, 123, 1);
   static final indigo = Colors.indigo.shade400;
   static final orange = Colors.deepOrange.shade400;
-  static final pink = Colors.pink.shade400;
   static final green = Colors.green.shade700;
   static final amber = Colors.amber.shade800;
-  static final lightBlue = Colors.lightBlue.shade700;
+  static final lightBlue = Colors.lightBlue.shade600;
 }
 
 class GradBackground extends StatelessWidget {
@@ -54,28 +52,49 @@ class GradBackground extends StatelessWidget {
   }
 }
 
-class GradBackground2 extends StatelessWidget {
-  final Widget child;
+class GradBackground2 extends StatefulWidget {
   final String imageUrl;
+  final Widget Function(Color bgColor, Color subBgColor) builder;
 
   const GradBackground2({
     super.key,
     required this.imageUrl,
-    required this.child,
+    required this.builder,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return getIt<ApiKit>().paletteColorsWidgetBuider(imageUrl, (paletteColors) {
-      late final Color bgColor, subBgColor;
-      if (AdaptiveTheme.of(context).mode.isDark) {
-        bgColor = adjustColor(paletteColors.first, l: 0.3, s: 0.3);
-        subBgColor = adjustColor(paletteColors.last, l: 0.08, s: 0.4);
-      } else {
-        bgColor = adjustColor(paletteColors[0], l: 0.5, s: 0.3);
-        subBgColor = adjustColor(paletteColors.last, l: 0.15, s: 0.4);
-      }
-      return GradBackground(color: bgColor, subColor: subBgColor, child: child);
+  State<GradBackground2> createState() => _GradBackground2State();
+}
+
+class _GradBackground2State extends State<GradBackground2> {
+  List<Color> paletteColors = List.filled(2, Colors.white);
+
+  Future<void> loadPaletteColors() {
+    return getPaletteColors(widget.imageUrl).then((data) {
+      setState(() => paletteColors = data);
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant GradBackground2 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    unawaited(loadPaletteColors());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(loadPaletteColors());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = adjustColor(paletteColors.first, l: 0.5, s: 0.3);
+    final subBgColor = adjustColor(paletteColors.last, l: 0.1, s: 0.4);
+    return GradBackground(
+      color: bgColor,
+      subColor: subBgColor,
+      child: widget.builder(bgColor, subBgColor),
+    );
   }
 }

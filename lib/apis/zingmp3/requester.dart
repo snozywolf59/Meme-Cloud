@@ -8,8 +8,9 @@ import 'package:memecloud/core/getit.dart';
 class ZingMp3Requester {
   final Dio dio = getIt<Dio>();
 
-  final _version = "1.13.13";
+  final _version = "1.14.3";
   final _baseUrl = "https://zingmp3.vn";
+  final _acBaseUrl = "https://ac.zingmp3.vn";
   final _apiKey = dotenv.env['ZINGMP3_API_KEY'].toString();
   final _secretKey = dotenv.env['ZINGMP3_SECRET_KEY'].toString();
   get _cTime => (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
@@ -67,6 +68,8 @@ class ZingMp3Requester {
     return params;
   }
 
+  final _allowedErrors = [-104, -201];
+
   Future<Map> _sendRequest(
     String path, {
     String? id,
@@ -92,12 +95,33 @@ class ZingMp3Requester {
           extra: extra,
         ),
       );
-      if (resp.data['err'] != -201) {
+      if (!_allowedErrors.contains(resp.data['err'])) {
         debugPrint('Request sent: ${resp.requestOptions.uri}');
         break;
       }
       await Future.delayed(Duration(seconds: 1));
     }
+
+    if (resp.data['err'] != 0 &&
+        !allowedErrorCodes.contains(resp.data['err'])) {
+      throw Exception(
+        'Unexpected eror code: ${resp.data['err']}. Resp data: ${resp.data}',
+      );
+    }
+
+    return resp.data;
+  }
+
+  Future<Map> _sendAcRequest(
+    String path, {
+    Map<String, dynamic>? params,
+    List<int> allowedErrorCodes = const [],
+  }) async {
+    final Response resp = await dio.get(
+      "$_acBaseUrl$path",
+      queryParameters: params,
+    );
+    debugPrint('Request sent: ${resp.requestOptions.uri}');
 
     if (resp.data['err'] != 0 &&
         !allowedErrorCodes.contains(resp.data['err'])) {
@@ -161,7 +185,7 @@ class ZingMp3Requester {
     return _sendRequest(
       path,
       id: artistId,
-      type: "artist",
+      type: 'artist',
       page: page,
       count: count,
       extra: {'sort': 'new', 'sectionId': 'aSong'},
@@ -177,6 +201,11 @@ class ZingMp3Requester {
     );
   }
 
+  Future<Map> getWeekChart(String chartId) {
+    final path = "/api/v2/page/get/week-chart";
+    return _sendRequest(path, id: chartId, extra: {'week': 0, 'year': 0});
+  }
+
   Future<Map> getLyric(String songId) {
     final path = "/api/v2/lyric/get/lyric";
     return _sendRequest(path, id: songId);
@@ -185,6 +214,11 @@ class ZingMp3Requester {
   Future<Map> multiSearch(String keyword) {
     final path = "/api/v2/search/multi";
     return _sendRequest(path, extra: {'q': keyword});
+  }
+
+  Future<Map> getSearchSuggestions(String keyword) {
+    final path = "/v1/web/ac-suggestions";
+    return _sendAcRequest(path, params: {'num': 10, 'query': keyword});
   }
 
   Future<Map> _filteredSearch(String type, String keyword, {int page = 1}) {
@@ -196,7 +230,7 @@ class ZingMp3Requester {
       path,
       type: type,
       page: page,
-      count: 16,
+      count: 18,
       extra: {'q': keyword},
     );
   }
@@ -211,5 +245,18 @@ class ZingMp3Requester {
 
   Future<Map> searchPlaylists(String keyword, {int page = 1}) {
     return _filteredSearch('playlist', keyword, page: page);
+  }
+
+  Future<Map> getListArtistAlbum({
+    required String artistId,
+    required int page,
+    required int count,
+  }) {
+    final path = "/api/v2/page/get/artist-album";
+    return _sendRequest(
+      path,
+      id: artistId,
+      extra: {'page': page, 'count': count},
+    );
   }
 }

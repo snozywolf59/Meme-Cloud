@@ -1,14 +1,13 @@
-import 'dart:async';
-
-import 'package:just_audio_background/just_audio_background.dart';
-import 'package:memecloud/apis/apikit.dart';
-import 'package:memecloud/apis/supabase/main.dart';
-import 'package:memecloud/apis/zingmp3/endpoints.dart';
 import 'package:memecloud/blocs/liked_songs/liked_songs_stream.dart';
 import 'package:memecloud/core/getit.dart';
+import 'package:memecloud/apis/apikit.dart';
+import 'package:memecloud/apis/supabase/main.dart';
+import 'package:memecloud/models/music_model.dart';
 import 'package:memecloud/models/artist_model.dart';
+import 'package:memecloud/apis/zingmp3/endpoints.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
-class SongModel {
+class SongModel extends MusicModel {
   final String id;
   final String title;
   final Duration duration;
@@ -16,7 +15,7 @@ class SongModel {
   final String thumbnailUrl;
   final DateTime releaseDate;
   final List<ArtistModel> artists;
-  bool? isLiked;
+  bool? _isLiked;
 
   // Private constructor
   SongModel._({
@@ -27,10 +26,9 @@ class SongModel {
     required this.artists,
     required this.releaseDate,
     required this.thumbnailUrl,
-    this.isLiked,
   });
 
-  static SongModel fromJson<T>(Map<String, dynamic> json, {bool? isLiked}) {
+  static SongModel fromJson<T>(Map<String, dynamic> json) {
     if (T == ZingMp3Api) {
       return SongModel._(
         id: json['encodeId'],
@@ -41,8 +39,10 @@ class SongModel {
         releaseDate: DateTime.fromMillisecondsSinceEpoch(
           json['releaseDate'] * 1000,
         ),
-        artists: !json.containsKey('artists') ? [] : ArtistModel.fromListJson<T>(json['artists']),
-        isLiked: isLiked,
+        artists:
+            !json.containsKey('artists')
+                ? []
+                : ArtistModel.fromListJson<T>(json['artists']),
       );
     } else if (T == SupabaseApi) {
       return SongModel._(
@@ -53,54 +53,50 @@ class SongModel {
         artists: ArtistModel.fromListJson<T>(json['song_artists']),
         thumbnailUrl: json['thumbnail_url'],
         releaseDate: DateTime.parse(json['release_date']),
-        isLiked: isLiked,
       );
     } else {
       throw UnsupportedError('Unsupported parse json for type $T');
     }
   }
 
-  Map toJson<T>({bool only = false}) {
-    if (T == SupabaseApi) {
-      final releaseDateString = releaseDate.toUtc().toIso8601String();
-      Map<String, Object> res = {
-        'id': id,
-        'title': title,
-        'duration': duration.inSeconds,
-        'artists_names': artistsNames,
-        'thumbnail_url': thumbnailUrl,
-        'release_date': releaseDateString
-      };
-      if (only == false) {
-        res['song_artists'] = artists.map((e) => e.toJson<T>()).toList();
-      }
-      return res;
-    } else {
-      throw UnsupportedError('Unsupported convert UserModel to json for type $T');
+  @override
+  Map<String, dynamic> toJson({bool only = false}) {
+    final releaseDateString = releaseDate.toUtc().toIso8601String();
+    Map<String, Object> res = {
+      'id': id,
+      'title': title,
+      'duration': duration.inSeconds,
+      'artists_names': artistsNames,
+      'thumbnail_url': thumbnailUrl,
+      'release_date': releaseDateString,
+    };
+    if (only == false) {
+      res['song_artists'] = artists.map((e) => e.toJson()).toList();
     }
+    return res;
   }
 
-  static Future<List<SongModel>> fromListJson<T>(List list) async {
-    final tmp = list.map((json) => SongModel.fromJson<T>(json)).toList();
+  static List<SongModel> fromListJson<T>(List list) {
+    final tmp = list.map((json) => SongModel.fromJson<T>(json));
+
     try {
-      final songIds = await getIt<ApiKit>().filterNonVipSongs(tmp.map((e) => e.id).toList());
+      final songIds = getIt<ApiKit>().filterPlayableSongs(
+        tmp.map((e) => e.id).toList(),
+      );
       return tmp.where((e) => songIds.contains(e.id)).toList();
-    } catch(_) {
-      return tmp;
+    } catch (_) {
+      return tmp.toList();
     }
   }
 
-  bool setIsLiked(bool newValue, {bool sync = true}) {
-    if (sync) {
-      unawaited(getIt<ApiKit>().setIsLiked(id, newValue));
-    }
-    getIt<LikedSongsStream>().setIsLiked(this, newValue);
-    return isLiked = newValue;
+  bool get isLiked {
+    if (_isLiked != null) return _isLiked!;
+    return _isLiked = getIt<ApiKit>().isSongLiked(id);
   }
-
-  Future<bool> loadIsLiked() async {
-    isLiked = await getIt<ApiKit>().getIsLiked(id);
-    return isLiked!;
+  set isLiked(bool isLiked) {
+    _isLiked = isLiked;
+    getIt<ApiKit>().setIsSongLiked(this, isLiked);
+    getIt<LikedSongsStream>().setIsLiked(this, isLiked);
   }
 
   MediaItem get mediaItem => MediaItem(
@@ -109,6 +105,6 @@ class SongModel {
     album: 'My album',
     duration: duration,
     artUri: Uri.parse(thumbnailUrl),
-    artist: artistsNames
+    artist: artistsNames,
   );
 }

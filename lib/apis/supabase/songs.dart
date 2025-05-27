@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'package:memecloud/core/getit.dart';
 import 'package:memecloud/models/song_model.dart';
-import 'package:memecloud/apis/connectivity.dart';
+import 'package:memecloud/apis/others/connectivity.dart';
 import 'package:memecloud/apis/supabase/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,7 +13,7 @@ class SupabaseSongsApi {
   Future<void> saveSongInfo(SongModel song) async {
     try {
       _connectivity.ensure();
-      await _client.from('songs').upsert(song.toJson<SupabaseApi>(only: true));
+      await _client.from('songs').upsert(song.toJson(only: true));
     } catch (e, stackTrace) {
       _connectivity.reportCrash(e, StackTrace.current);
       log('Failed to save song info: $e', stackTrace: stackTrace, level: 1000);
@@ -46,12 +46,7 @@ class SupabaseSongsApi {
       final response =
           await _client
               .from('songs')
-              .select('''
-                *,
-                song_artists(
-                  artist:artists (*)
-                )
-              ''')
+              .select('*, song_artists(artist:artists (*))')
               .eq('id', songId)
               .maybeSingle();
       if (response == null) return null;
@@ -89,27 +84,19 @@ class SupabaseSongsApi {
     }
   }
 
-  Future<List<SongModel>> getLikedSongsList() async {
+  Future<List<SongModel>> getLikedSongs() async {
     try {
       _connectivity.ensure();
       final userId = _client.auth.currentUser!.id;
 
       final response = await _client
           .from('liked_songs')
-          .select('''songs(
-            *,
-            song_artists(
-              artist:artists (*)
-            )
-          )''')
+          .select('songs(*, song_artists(artist:artists (*)))')
           .eq('user_id', userId);
 
       final songsList =
           (response as List).map((item) {
-            return SongModel.fromJson<SupabaseApi>(
-              item['songs'],
-              isLiked: true,
-            );
+            return SongModel.fromJson<SupabaseApi>(item['songs']);
           }).toList();
 
       return songsList;
@@ -144,29 +131,27 @@ class SupabaseSongsApi {
     }
   }
 
-  Future<void> toggleBlacklist(String songId) async {
+  Future<void> setIsBlacklisted(String songId, bool isBlacklisted) async {
     try {
       _connectivity.ensure();
       final userId = _client.auth.currentUser!.id;
 
-      bool alreadyBlacklisted = await isBlacklisted(songId);
-
-      if (alreadyBlacklisted) {
+      if (isBlacklisted) {
+        await _client.from('blacklist').insert({
+          'user_id': userId,
+          'song_id': songId,
+        });
+      } else {
         await _client
             .from('blacklist')
             .delete()
             .eq('user_id', userId)
             .eq('song_id', songId);
-      } else {
-        await _client.from('blacklist').insert({
-          'user_id': userId,
-          'song_id': songId,
-        });
       }
     } catch (e, stackTrace) {
       _connectivity.reportCrash(e, stackTrace);
       log(
-        "Failed to toggle blacklist for song: $e",
+        "Failed to set blacklist for song: $e",
         stackTrace: stackTrace,
         level: 1000,
       );
@@ -181,16 +166,16 @@ class SupabaseSongsApi {
 
       final response = await _client
           .from('blacklist')
-          .select('song(*)')
+          .select('songs(*, song_artists(artist:artists (*)))')
           .eq('user_id', userId);
 
       final songsList =
           response
-              .map((item) => SongModel.fromJson<SupabaseApi>(item))
+              .map((e) => SongModel.fromJson<SupabaseApi>(e['songs']))
               .toList();
       return songsList;
     } catch (e, stackTrace) {
-      _connectivity.reportCrash(e, StackTrace.current);
+      _connectivity.reportCrash(e, stackTrace);
       log(
         "Failed to get blacklisted songs: $e",
         stackTrace: stackTrace,
@@ -200,26 +185,41 @@ class SupabaseSongsApi {
     }
   }
 
-  ///End blacklist song
-
-  ///begin increment view
-  Future<void> incrementView(String songId) async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-
-  if (userId == null) return;
-
-  final response = await Supabase.instance.client
-      .rpc('increment_view', params: {
-        'listened_song_id': songId,
-        'listened_user_id': userId,
-      });
-
-  if (response.error != null) {
-    log('Lỗi tăng view: ${response.error!.message}');
+  Future<int> newSongStream(String songId) async {
+    try {
+      _connectivity.ensure();
+      final response = await _client.rpc(
+        'new_song_stream',
+        params: {'song_id': songId},
+      );
+      return response as int;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, stackTrace);
+      log(
+        'Failed to record new song stream: $e',
+        stackTrace: stackTrace,
+        level: 1000,
+      );
+      rethrow;
+    }
   }
-  }
 
-  ///end increment view
+  Future<int> streamCount(String songId) async {
+    try {
+      _connectivity.ensure();
+      final response =
+          await _client
+              .from('songs')
+              .select('stream_count')
+              .eq('id', songId)
+              .maybeSingle();
+      return response?['stream_count'] ?? 0;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, stackTrace);
+      log('Failed to count song streams', stackTrace: stackTrace, level: 1000);
+      rethrow;
+    }
+  }
 
   Future<List<String>> filterNonVipSongs(Iterable<String> songsIds) async {
     try {
@@ -248,6 +248,53 @@ class SupabaseSongsApi {
       _connectivity.reportCrash(e, StackTrace.current);
       log(
         'Failed to mark song as vip: $e',
+        stackTrace: stackTrace,
+        level: 1000,
+      );
+      rethrow;
+    }
+  }
+
+  Future<List<String>> getVipSongIds() async {
+    try {
+      _connectivity.ensure();
+      final response = await _client.from('vip_songs').select('song_id');
+      final songIds = List<String>.from(response.map((e) => e['song_id']));
+      return songIds;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, StackTrace.current);
+      log(
+        'Failed to fetch all vip songs: $e',
+        stackTrace: stackTrace,
+        level: 1000,
+      );
+      rethrow;
+    }
+  }
+
+  Future<List<SongModel>> getFollowedArtistsSongs() async {
+    try {
+      _connectivity.ensure();
+      final userId = _client.auth.currentUser!.id;
+
+      final response = await _client
+          .from('followers')
+          .select(
+            'artist_id, artist:artists(*, song_artists(*, song:songs(*)))',
+          )
+          .eq('user_id', userId);
+
+      final songsList = <SongModel>[];
+      for (final artist in response) {
+        for (final song in artist['artist']['songs']) {
+          songsList.add(SongModel.fromJson<SupabaseApi>(song));
+        }
+      }
+      return songsList;
+    } catch (e, stackTrace) {
+      _connectivity.reportCrash(e, StackTrace.current);
+      log(
+        'Failed to get followed artists songs: $e',
         stackTrace: stackTrace,
         level: 1000,
       );

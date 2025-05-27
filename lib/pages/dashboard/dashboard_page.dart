@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:memecloud/components/miscs/mini_player.dart';
-import 'package:memecloud/components/miscs/default_appbar.dart';
+import 'package:flutter_snake_navigationbar/flutter_snake_navigationbar.dart';
 import 'package:memecloud/pages/dashboard/home_page.dart';
-import 'package:memecloud/components/miscs/grad_background.dart';
-import 'package:memecloud/pages/dashboard/liked_songs_page.dart';
-import 'package:memecloud/pages/experiment/experiment_page.dart';
+import 'package:memecloud/pages/library/library_page.dart';
 import 'package:memecloud/pages/dashboard/search_page.dart';
+import 'package:memecloud/components/song/mini_player.dart';
+import 'package:memecloud/pages/dashboard/top_chart_page.dart';
+import 'package:memecloud/components/miscs/default_appbar.dart';
+import 'package:memecloud/components/miscs/grad_background.dart';
+import 'package:memecloud/pages/experiment/experiment_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -29,9 +31,12 @@ class _DashboardPageState extends State<DashboardPage> {
         scaffElems = getSearchPage(context);
         break;
       case 2:
-        scaffElems = getLikedSongsPage(context);
+        scaffElems = getTopChartPage(context);
         break;
       case 3:
+        scaffElems = getLibraryPage(context);
+        break;
+      case 4:
         scaffElems = getExperimentPage(context);
         break;
       default:
@@ -46,21 +51,7 @@ class _DashboardPageState extends State<DashboardPage> {
       color: scaffElems['bgColor'],
       child: Scaffold(
         appBar: scaffElems['appBar'],
-        body: RefreshIndicator(
-          onRefresh: () async {
-            setState(() {});
-            await Future.delayed(Duration(seconds: 1));
-          },
-          child: Column(
-            children: <Widget>[
-              Expanded(child: scaffElems['body']),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: getMiniPlayer(),
-              ),
-            ],
-          ),
-        ),
+        body: scaffElems['body'],
         floatingActionButton: scaffElems['floatingActionButton'],
         backgroundColor: Colors.transparent,
         bottomNavigationBar: _bottomNavigationBar(),
@@ -68,28 +59,37 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  BottomNavigationBar _bottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Liked'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.bubble_chart),
-          label: 'Experiment',
+  Widget _bottomNavigationBar() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        MiniPlayer(),
+        SnakeNavigationBar.color(
+          snakeShape: SnakeShape.circle,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white,
+          snakeViewColor: Colors.indigo.shade400,
+
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          currentIndex: currentPageIndex,
+          onTap: (index) => setState(() => currentPageIndex = index),
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.library_music), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.bubble_chart), label: ''),
+          ],
         ),
+        // NavigationBar(
+        //   selectedIndex: currentPageIndex,
+        //   onDestinationSelected:
+        //   destinations: const [
+        //   ],
+        // ),
       ],
-      currentIndex: currentPageIndex,
-      selectedItemColor: const Color(0xFF1976D2),
-      unselectedItemColor: Colors.grey,
-      showSelectedLabels: true,
-      showUnselectedLabels: false,
-      onTap: (index) {
-        setState(() {
-          currentPageIndex = index;
-        });
-      },
     );
   }
 }
